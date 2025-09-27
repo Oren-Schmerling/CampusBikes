@@ -1,0 +1,26 @@
+services:
+  springboot:
+    image: openjdk:21-jdk-slim
+    container_name: springboot_app
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    working_dir: /backend # Set the working directory
+    ports:
+      - "8080:8080" # Expose the port your Spring Boot app runs on
+  postgres:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      # todo: update this when we make a proper password
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bikedb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data: # This defines the named volume
+
