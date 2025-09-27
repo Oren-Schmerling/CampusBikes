@@ -2,12 +2,14 @@
 
 Campus bike rental project made by group Waxwing
 
-# Backend
+# Testing the code
 
-SpringBoot is set to run in this repository on Java 21. Please install Java 21 or a newer version, and be sure to have your JAVA_HOME variable set correctly.
+SpringBoot is set to run in this repository on Java 21. Please install Java 21 or a newer version.
 
-To run the backend, cd into the backend directory, and run `./gradlew bootRun`
+The code is set up to run with `docker-compose`. Please install the latest stable version of Docker. Once installed, you should be able to run `docker-compose up --build` in the root directory of the repository and it will run the backend as well as the PostgreSQL db.
 
-After starting up the JVM, you should be able to see "Hello World!" printed on your screen at http://localhost:8080/hello
+After starting up the volumes on docker, you should be able to see "Hello World!" printed on your screen at http://localhost:8080/hello
 
-When you're done running the JVM to test the application, be sure to run `./gradlew --stop` in the same directory to avoid leaving any daemon(s) uneccesarily
+You can look at the PostgreSQL database by logging into it. It's on port `5432` and you can connect to it with the following command: `psql -h localhost -p 5432 -U postgres -d bikedb`. You'll be prompted to enter the password which is "postgres" for now.
+
+When you're done running the server, be sure to stop the process and then run `docker-compose down` to tear down the docker images.
