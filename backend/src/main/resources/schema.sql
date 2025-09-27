@@ -3,7 +3,7 @@
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     username VARCHAR(100) NOT NULL UNIQUE,
-    email VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(100) NOT NULL,
     phone VARCHAR(12),
     -- profile_picture BYTEA, --this can wait, and I'm not sure if BYTEA is the best way to store it
