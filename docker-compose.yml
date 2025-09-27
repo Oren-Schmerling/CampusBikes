@@ -6,16 +6,20 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     working_dir: /backend # Set the working directory
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_URL: ${POSTGRES_URL}
     ports:
       - "8080:8080" # Expose the port your Spring Boot app runs on
   postgres:
     image: postgres:latest
     container_name: postgres_db
     environment:
-      POSTGRES_USER: postgres
-      # todo: update this when we make a proper password
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: bikedb
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
