@@ -1,5 +1,3 @@
--- /backend/src/main/resources/schema.sql
-
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     username VARCHAR(100) NOT NULL UNIQUE,
