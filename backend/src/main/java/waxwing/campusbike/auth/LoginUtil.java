@@ -1,16 +1,23 @@
 package waxwing.campusbike.auth;
 import java.sql.*;
+import io.github.cdimascio.dotenv.Dotenv;
 
 // import waxwing.campusbike.types.LoginRequest;
 
 public class LoginUtil {
     
     private static boolean validateUser(String username, String plain_pass){
+        Dotenv dotenv = Dotenv.configure()
+                      .directory("./..") // relative to src folder
+                      .load();
+
+        String user = dotenv.get("POSTGRES_USER");
+        String password = dotenv.get("POSTGRES_PASSWORD");
         
         String query = "SELECT password_hash FROM users WHERE username = ?";
 
         try (Connection conn = DriverManager.getConnection(
-                "jdbc:postgresql://localhost:5432/bikedb", "${POSTGRES_USER}", "${POSTGRES_PASSWORD}");
+                "jdbc:postgresql://localhost:5432/bikedb", user, password);
              PreparedStatement stmt = conn.prepareStatement(query)) {
             
             // setString should handle sql injections
@@ -22,6 +29,7 @@ public class LoginUtil {
                 return passwordUtil.verifyPassword(plain_pass, storedHash);
             } else {
                 // user not found
+                System.out.println("User not found!");
                 return false;
             }
         } catch (SQLException e) {
@@ -33,12 +41,18 @@ public class LoginUtil {
 
     //
     public static int loginHandler(String username, String plain_pass) {
-        try {
-            validateUser(username, plain_pass);
-        } catch (Exception e){
+        // try {
+        //     validateUser(username, plain_pass);
+        // } catch (Exception e){
+        //     return 400;
+        // }
+        // // everything is good
+        // return 200;
+
+        if (validateUser(username, plain_pass)){
+            return 200;
+        } else {
             return 400;
         }
-        // everything is good
-        return 200;
     }
 }
