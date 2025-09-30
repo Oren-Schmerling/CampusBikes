@@ -2,9 +2,37 @@ package waxwing.campusbike;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.net.URISyntaxException;
+
 import waxwing.campusbike.auth.LoginUtil;
 
+import waxwing.campusbike.auth.registrationUtil;
+import waxwing.campusbike.auth.passwordUtil; 
+import java.util.UUID;
+import java.io.IOException;
+
 public class loginUtilTests {
+
+    @Test
+    void randomUser() throws URISyntaxException, IOException{
+        String username = UUID.randomUUID().toString();
+        String hashedPassword = passwordUtil.hashPassword("password");
+        String email = username + "@umass.edu";
+        int result =registrationUtil.registrationHandler(
+            username,
+            hashedPassword,
+            email,
+        ""
+        );
+        boolean responseOk = (result >= 200 && result < 300);
+        if (!responseOk){
+            System.out.println("Error registering user.");
+            return;
+        }
+        int res = LoginUtil.loginHandler(username, "password");
+        assertTrue((res >= 200 && res < 300));
+    }
 
     @Test
     void loginSuccess(){
