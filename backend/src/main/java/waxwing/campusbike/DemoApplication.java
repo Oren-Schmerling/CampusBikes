@@ -33,10 +33,11 @@ public class DemoApplication {
       return registrationUtil.registrationHandler(username, pwHash, email, phone);
     }
 
-    @GetMapping("/login")
-    public int login(
-      @RequestParam(value = "username") String username,
-      @RequestParam(value = "plain_pass") String plain_pass
+    // Spring security already has an endpoint at /login, so this is named differently to avoid conflict
+    @GetMapping("/userlogin")
+    public int userlogin(
+      @RequestParam(value = "username", defaultValue = "") String username,
+      @RequestParam(value = "plain_pass", defaultValue = "") String plain_pass
     ) {
       // should receive username and password from user as plain text
       return LoginUtil.loginHandler(username, plain_pass);

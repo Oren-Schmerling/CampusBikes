@@ -2,7 +2,6 @@ package waxwing.campusbike.auth;
 import java.sql.*;
 import io.github.cdimascio.dotenv.Dotenv;
 
-
 public class LoginUtil {
 
     // check if a string is null
@@ -10,7 +9,7 @@ public class LoginUtil {
         return str == null;
     }
     
-    // this function will query the database and see if the username is in the db, and if the passwords matched
+    // this function will query the database and see if the username is in the db, and if the passwords match
     private static int validateUser(String username, String plain_pass){
         if (nullCheck(username)) return 2;
         if (nullCheck(plain_pass)) return 3;
@@ -39,11 +38,8 @@ public class LoginUtil {
             // for now, assume that usernames are unique, so only check next row
             if (rs.next()) {
                 // extract password_hash, use passwordUtil to verify the hashed passwords
-                String storedHash = rs.getString("password_hash");        
+                String storedHash = rs.getString("password_hash");  
                 return passwordUtil.verifyPassword(plain_pass, storedHash) ? 0 : 1;
-
-                // this line below was for hardcoded tests
-                // return storedHash.equals("hashed_pass") ? 0 : 1;
             } else {
                 // user not found in db
                 return 4;
