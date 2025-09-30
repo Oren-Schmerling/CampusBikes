@@ -2,14 +2,15 @@ package waxwing.campusbike.auth;
 import java.sql.*;
 import io.github.cdimascio.dotenv.Dotenv;
 
-// import waxwing.campusbike.types.LoginRequest;
 
 public class LoginUtil {
 
+    // check if a string is null
     private static boolean nullCheck(String str){
         return str == null;
     }
     
+    // this function will query the database and see if the username is in the db, and if the passwords matched
     private static int validateUser(String username, String plain_pass){
         if (nullCheck(username)) return 2;
         if (nullCheck(plain_pass)) return 3;
@@ -19,19 +20,25 @@ public class LoginUtil {
                       .directory("./..") // relative to gradle src folder
                       .load();
 
-        String user = dotenv.get("POSTGRES_USER");
-        String password = dotenv.get("POSTGRES_PASSWORD");
+        String db_user = dotenv.get("POSTGRES_USER");
+        String db_pw = dotenv.get("POSTGRES_PASSWORD");
+        String db_url = dotenv.get("POSTGRES_URL");
         
+        // sql query, only selecting password_hash column for now
         String query = "SELECT password_hash FROM users WHERE username = ?";
 
-        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/bikedb", user, password);
+        // connect to the db, prepare the query statement
+        try (Connection conn = DriverManager.getConnection(db_url, db_user, db_pw);
              PreparedStatement stmt = conn.prepareStatement(query)) {
             
-            // setString should handle sql injections, replaces ? w/ username
+            // setString should handle sql injections by putting username as a string, not as part of the sql command
+            // replaces '?' w/ username variable
             stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();
-
+            
+            // for now, assume that usernames are unique, so only check next row
             if (rs.next()) {
+                // extract password_hash, use passwordUtil to verify the hashed passwords
                 String storedHash = rs.getString("password_hash");        
                 return passwordUtil.verifyPassword(plain_pass, storedHash) ? 0 : 1;
 
@@ -49,11 +56,10 @@ public class LoginUtil {
             System.out.println("Error: " + e);
             return 5;
         }
-
     }
 
     public static int loginHandler(String username, String plain_pass) {
-        // need to add more error codes?
+        // use different error codes?
         int res = validateUser(username, plain_pass); 
         if (res == 0){
             return 200;

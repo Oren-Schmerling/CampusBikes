@@ -38,6 +38,7 @@ public class DemoApplication {
       @RequestParam(value = "username") String username,
       @RequestParam(value = "plain_pass") String plain_pass
     ) {
+      // should receive username and password from user as plain text
       return LoginUtil.loginHandler(username, plain_pass);
     }
 }

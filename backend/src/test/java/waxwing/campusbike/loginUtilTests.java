@@ -10,6 +10,10 @@ public class loginUtilTests {
     void loginSuccess(){
         // add a test user to the database w/ the following 
         // INSERT INTO users (username, email, password_hash, phone) VALUES ('testuser', 'test@umass.edu', 'hashed_pass', '123456789');
+
+        // NOTE: if you use 'docker compose down -v', the database volume will be deleted, and the data will not persist on your local machine
+        // so you must reinsert data every time you want to test
+
         int res = LoginUtil.loginHandler("testuser", "hashed_pass");
         assertTrue((res >= 200 && res < 300));
     }
