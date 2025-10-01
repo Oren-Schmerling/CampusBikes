@@ -22,8 +22,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
   implementation 'org.springframework.boot:spring-boot-starter-json'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'commons-validator:commons-validator:1.6'
-	runtimeOnly 'org.postgresql:postgresql'
+	implementation 'commons-validator:commons-validator:1.9.0'
+  implementation 'com.googlecode.libphonenumber:libphonenumber:9.0.15'
+  runtimeOnly 'org.postgresql:postgresql'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
