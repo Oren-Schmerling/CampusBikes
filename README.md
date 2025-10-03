@@ -20,7 +20,7 @@ After starting up the volumes on docker, you should be able to see "Hello World!
 
 You can look at the PostgreSQL database by logging into it. It's on port `5432` and you can connect to it with the following command: `psql -h localhost -p 5432 -U postgres_user -d bikedb`. You'll be prompted to enter the password which is visible in your .env file.
 
-@todo: document postgrest
+@TODO: document postgrest
 
 When you're done running the server, be sure to stop the process and then run `docker-compose down -v` to tear down the docker images.
 ```
