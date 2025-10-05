@@ -1,7 +1,9 @@
 package waxwing.campusbike;
 
-import waxwing.campusbike.auth.PasswordUtil;
 import org.junit.jupiter.api.Test;
+
+import waxwing.campusbike.auth.util.PasswordUtil;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class PasswordUtilTestsTest {

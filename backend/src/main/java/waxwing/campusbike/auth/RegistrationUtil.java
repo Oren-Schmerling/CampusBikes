@@ -1,6 +1,8 @@
 package waxwing.campusbike.auth;
 
 import waxwing.campusbike.Env;
+import waxwing.campusbike.auth.util.PasswordUtil;
+import waxwing.campusbike.auth.util.VerificationUtil;
 import waxwing.campusbike.types.User;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -13,13 +15,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
-import waxwing.campusbike.auth.PasswordUtil;
 
 @Service
 public class RegistrationUtil {
@@ -34,17 +34,7 @@ public class RegistrationUtil {
 
   }
 
-  public EmailValidity verifyEmail(String email) {
-    EmailValidator validator = EmailValidator.getInstance();
-    if (!validator.isValid(email)) {
-      return EmailValidity.INVALID;
-    } else if (!email.contains("umass.edu")) { // do NOT set this to "@umass.edu" because an alias like @cns.umass.edu
-                                               // would fail
-      return EmailValidity.NOT_UMASS;
-    } else {
-      return EmailValidity.VALID;
-    }
-  }
+
 
   // TODO: Make this async? (unssure what's desired behavior ask team)
   // sends a post request to postgrest to insert the User into the users table
@@ -84,8 +74,8 @@ public class RegistrationUtil {
     }
   }
 
-  public int registrationHandler(String username, String pwHash, String email, String phone) {
-    EmailValidity emailStatus = this.verifyEmail(email);
+  public int registrationHandler(String username, String password, String email, String phone) {
+    EmailValidity emailStatus = VerificationUtil.verifyEmail(email);
     if (emailStatus == EmailValidity.INVALID) {
       return 470;
     } else if (emailStatus == EmailValidity.NOT_UMASS) {
@@ -137,7 +127,7 @@ public class RegistrationUtil {
       return 409; // conflict, username already exists
     }
 
-    User newUser = new User(username, email, PasswordUtil.hashPassword(pwHash)); // used function from password util to hash the password stored in the db
+    User newUser = new User(username, email, PasswordUtil.hashPassword(password)); // used function from password util to hash the password stored in the db
     if (phone.isBlank()) {
       newUser.setPhone(phone);
     } else { // phone number isn't empty

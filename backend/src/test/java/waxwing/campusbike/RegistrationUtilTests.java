@@ -1,12 +1,14 @@
 package waxwing.campusbike;
 
+import waxwing.campusbike.auth.EmailValidity;
 import waxwing.campusbike.auth.RegistrationUtil;
+import waxwing.campusbike.auth.util.PasswordUtil;
+import waxwing.campusbike.auth.util.VerificationUtil;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import waxwing.campusbike.auth.EmailValidity;
-import waxwing.campusbike.auth.PasswordUtil;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.UUID;
 
@@ -18,17 +20,20 @@ public class RegistrationUtilTests {
 
   @Test
   void testEmailValidityInvalid() {
-    assertEquals(registrationUtil.verifyEmail("notAnEmail"), EmailValidity.INVALID);
+    VerificationUtil verificationUtil = new VerificationUtil();
+    assertEquals(verificationUtil.verifyEmail("notAnEmail"), EmailValidity.INVALID);
   }
 
   @Test
   void testEmailValidityNonUMass() {
-    assertEquals(registrationUtil.verifyEmail("normalemail@gmail.com"), EmailValidity.NOT_UMASS);
+    VerificationUtil verificationUtil = new VerificationUtil();
+    assertEquals(verificationUtil.verifyEmail("normalemail@gmail.com"), EmailValidity.NOT_UMASS);
   }
 
   @Test
   void testEmailValidityValid() {
-    assertEquals(registrationUtil.verifyEmail("normalemail@umass.edu"), EmailValidity.VALID);
+    VerificationUtil verificationUtil = new VerificationUtil();
+    assertEquals(verificationUtil.verifyEmail("normalemail@umass.edu"), EmailValidity.VALID);
   }
 
   @Test

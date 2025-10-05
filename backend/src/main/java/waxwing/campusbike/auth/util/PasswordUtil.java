@@ -1,4 +1,4 @@
-package waxwing.campusbike.auth;
+package waxwing.campusbike.auth.util;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
