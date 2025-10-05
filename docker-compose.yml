@@ -33,12 +33,12 @@ services:
       PGRST_DB_ANON_ROLE: ${POSTGRES_USER}
       # PGRST_JWT_SECRET: TODO: add this when we implement authentication
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/"] #TODO move to env
+      test: ["CMD", "curl", "-f", "http://localhost:3001/"] #TODO move to env
       interval: 10s
       timeout: 5s
       retries: 5
     ports:
-      - "3000:3000"
+      - "3001:3001"
     depends_on:
       - postgres
 

@@ -10,7 +10,7 @@ import java.net.URISyntaxException;
 
 public class ApplicationIntegrationTest {
 
-  private static final String POSTGREST_HEALTH_URL = "http://localhost:3000/";
+  private static final String POSTGREST_HEALTH_URL = "http://localhost:3001/"; // TODO: pull from env
   private static final int TIMEOUT_SECONDS = 10;
 
   @Test
