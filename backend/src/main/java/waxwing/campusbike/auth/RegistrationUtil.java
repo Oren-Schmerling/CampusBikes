@@ -16,10 +16,10 @@ import java.net.http.HttpResponse;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+import waxwing.campusbike.auth.PasswordUtil;
 
 @Service
 public class RegistrationUtil {
@@ -137,7 +137,7 @@ public class RegistrationUtil {
       return 409; // conflict, username already exists
     }
 
-    User newUser = new User(username, email, pwHash);
+    User newUser = new User(username, email, PasswordUtil.hashPassword(pwHash)); // used function from password util to hash the password stored in the db
     if (phone.isBlank()) {
       newUser.setPhone(phone);
     } else { // phone number isn't empty
