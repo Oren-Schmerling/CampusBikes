@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
-import waxwing.campusbike.auth.PasswordUtil;
 
 @Service
 public class RegistrationUtil {
@@ -84,7 +83,7 @@ public class RegistrationUtil {
     }
   }
 
-  public int registrationHandler(String username, String pwHash, String email, String phone) {
+  public int registrationHandler(String username, String password, String email, String phone) {
     EmailValidity emailStatus = this.verifyEmail(email);
     if (emailStatus == EmailValidity.INVALID) {
       return 470;
@@ -137,7 +136,9 @@ public class RegistrationUtil {
       return 409; // conflict, username already exists
     }
 
-    User newUser = new User(username, email, PasswordUtil.hashPassword(pwHash)); // used function from password util to hash the password stored in the db
+    User newUser = new User(username, email, PasswordUtil.hashPassword(password)); // used function from password util
+                                                                                   // to hash the password stored in the
+                                                                                   // db
     if (phone.isBlank()) {
       newUser.setPhone(phone);
     } else { // phone number isn't empty
