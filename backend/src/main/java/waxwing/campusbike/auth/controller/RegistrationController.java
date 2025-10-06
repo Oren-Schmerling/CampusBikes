@@ -1,5 +1,8 @@
 package waxwing.campusbike.auth.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,32 +21,36 @@ public class RegistrationController {
         this.registrationService = registrationService;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody RegistrationRequest request) {
+   @PostMapping("/register")
+    public ResponseEntity<Map<String, Object>> registerUser(@RequestBody RegistrationRequest request) {
         int statusCode = registrationService.registerUser(request);
+        Map<String, Object> response = new HashMap<>();
 
-        // Map your custom status codes to HTTP responses
         switch (statusCode) {
             case 470:
-                return ResponseEntity.badRequest().body("Invalid email format");
+                response.put("message", "Invalid email format");
+                return ResponseEntity.badRequest().body(response);
             case 471:
-                return ResponseEntity.badRequest().body("Email must be a UMass email");
+                response.put("message", "Email must be a UMass email");
+                return ResponseEntity.badRequest().body(response);
             case 409:
-                return ResponseEntity.status(409).body("Username or email already exists");
+                response.put("message", "Username or email already exists");
+                return ResponseEntity.status(409).body(response);
             case 423:
-                return ResponseEntity.badRequest().body("Invalid phone number");
+                response.put("message", "Invalid phone number");
+                return ResponseEntity.badRequest().body(response);
             case 494:
-                return ResponseEntity.badRequest().body("Phone number parsing error");
-            case 497:
-            case 498:
-            case 499:
-                return ResponseEntity.status(500).body("Internal server error");
+                response.put("message", "Phone number parsing error");
+                return ResponseEntity.badRequest().body(response);
+            case 200:
+            case 201:
+                response.put("message", "Registration successful");
+                return ResponseEntity.ok(response);
             default:
-                if (statusCode >= 200 && statusCode < 300) {
-                    return ResponseEntity.ok("Registration successful");
-                } else {
-                    return ResponseEntity.status(statusCode).body("Error: " + statusCode);
-                }
+                response.put("message", "Error");
+                return ResponseEntity.status(statusCode >= 400 ? statusCode : 500).body(response);
         }
     }
+
+
 }
