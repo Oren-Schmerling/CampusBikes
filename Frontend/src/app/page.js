@@ -1,4 +1,5 @@
 import NavBar from "@/components/nav/navBar";
+import Link from "next/link";
 
 function BigText() {
   return (
@@ -40,13 +41,16 @@ function LittleText() {
   );
 }
 
+// TODO: Link this button to the sign-up page
 function JoinButton() {
   return (
-    <div className="w-85 px-14 py-6 bg-waxwingGreen rounded-[40px] z-100">
-      <div className="justify-self-center text-lighterGray text-2xl font-medium font-['Poppins']">
-        Join the community
+    <Link href="/signup">
+      <div className="w-85 px-14 py-6 bg-waxwingGreen rounded-[40px] z-100 hover:bg-waxwingLightGreen hover:cursor-pointer active:bg-waxwingDarkGreen active:cursor-pointer">
+        <div className="justify-self-center text-lighterGray text-2xl font-medium font-['Poppins']">
+          Join the community
+        </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
