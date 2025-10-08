@@ -14,6 +14,8 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import org.springframework.web.util.UriComponentsBuilder;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -73,27 +75,39 @@ public class RegistrationService {
      * Check if a user with the given username or email already exists in the database.
      * Returns true if such a user exists, false otherwise.
      */
-
     private boolean userExists(String username, String email) {
         HttpClient client = HttpClient.newHttpClient();
+
         try {
-            URI postgrestUrl = new URI(env.getPOSTGREST_URL() + "/users?or=(username.eq." + username + ",email.eq." + email + ")");
-            HttpRequest request = HttpRequest.newBuilder().uri(postgrestUrl).GET().build();
+            // Build the full URI safely and automatically encode parameters
+            URI uri = UriComponentsBuilder
+                    .fromHttpUrl(env.getPOSTGREST_URL() + "/users")
+                    .queryParam("or", String.format("(username.eq.%s,email.eq.%s)", username, email))
+                    .build(true) // true = don't re-encode the already-safe parts like parentheses
+                    .toUri();
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .header("Accept", "application/json")
+                    .GET()
+                    .build();
+
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() != 200) {
-                // This is an error in checking the DB, you might throw an exception or return false
                 throw new RuntimeException("Failed to check user existence, response code: " + response.statusCode());
             }
 
             User[] existingUsers = objectMapper.readValue(response.body(), User[].class);
-            return existingUsers.length > 0;  // true only if DB returns existing users
-        } catch (IOException | InterruptedException | URISyntaxException e) {
-            e.printStackTrace();
-            // Either propagate the exception or handle gracefully
+            return existingUsers.length > 0;
+
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException("Error checking user existence", e);
         }
     }
+
+
+
 
 
     /*  
