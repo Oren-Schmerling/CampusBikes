@@ -47,7 +47,7 @@ public class RegistrationController {
                 response.put("message", "Registration successful");
                 return ResponseEntity.ok(response);
             default:
-                response.put("message", "Error");
+                response.put("message", "Error, status code: " + statusCode);
                 return ResponseEntity.status(statusCode >= 400 ? statusCode : 500).body(response);
         }
     }

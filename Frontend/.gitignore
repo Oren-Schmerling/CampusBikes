@@ -1,0 +1,11 @@
+# Node modules
+node_modules/
+
+# Next.js build output
+.next/
+out/
+dist/
+
+# Environment variables
+.env
+

@@ -17,6 +17,16 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import io.github.cdimascio.dotenv.Dotenv;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+import javax.sql.DataSource;
+import java.sql.ResultSet;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +39,10 @@ public class RegistrationService {
 
   private final Env env;
   private final ObjectMapper objectMapper;
+
+
+  @Autowired
+  private DataSource dataSource;
 
   @Autowired
   public RegistrationService(Env env) {
@@ -71,7 +85,12 @@ public class RegistrationService {
       }
     }
 
-    return uploadUser(newUser);
+    int code = uploadUser(newUser);
+    if (code == 1){
+      return 201; // Created
+    } else {
+      return 500; // Internal Server Error
+    }
   }
 
   /*
@@ -79,36 +98,25 @@ public class RegistrationService {
    * database.
    * Returns true if such a user exists, false otherwise.
    */
+  //This could probably be improved to show if either username or email exists
+  //Instead of both but good for now
   private boolean userExists(String username, String email) {
-    HttpClient client = HttpClient.newHttpClient();
+    String checkSql = "SELECT COUNT(*) FROM users WHERE username = ? OR email = ?";
 
-    try {
-      // Build the full URI safely and encode parameters
-      String safeEmail = email.replace("@", URLEncoder.encode("@", "UTF-8"));
+    try (Connection conn = dataSource.getConnection();
+      PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+            checkStmt.setString(1, username);
+            checkStmt.setString(2, email);
 
-      URI uri = UriComponentsBuilder
-          .fromUriString(env.getPOSTGREST_URL() + "/users")
-          .queryParam("or", String.format("(username.eq.%s,email.eq.%s)", username, safeEmail))
-          .build(true) // true = don't re-encode the already-safe parts like parentheses
-          .toUri();
-
-      HttpRequest request = HttpRequest.newBuilder()
-          .uri(uri)
-          .header("Accept", "application/json")
-          .GET()
-          .build();
-
-      HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-      if (response.statusCode() != 200) {
-        throw new RuntimeException("Failed to check user existence, response code: " + response.statusCode());
-      }
-
-      User[] existingUsers = objectMapper.readValue(response.body(), User[].class);
-      return existingUsers.length > 0;
-
-    } catch (IOException | InterruptedException e) {
-      throw new RuntimeException("Error checking user existence", e);
+            ResultSet rs = checkStmt.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                return true;
+            }else {
+                return false; 
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return true;
     }
   }
 
@@ -117,19 +125,21 @@ public class RegistrationService {
    * Returns the HTTP status code from the POST request.
    */
   private int uploadUser(User user) {
-    try {
-      String jsonInputString = objectMapper.writeValueAsString(user);
-      URI POSTGREST_URL = new URI(env.getPOSTGREST_URL() + "/users");
-      HttpRequest request = HttpRequest.newBuilder()
-          .uri(POSTGREST_URL)
-          .header("Content-Type", "application/json")
-          .POST(HttpRequest.BodyPublishers.ofString(jsonInputString))
-          .build();
-      HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-      return response.statusCode();
-    } catch (IOException | InterruptedException | URISyntaxException e) {
-      e.printStackTrace();
-      return 497;
+    String sql = "INSERT INTO users (username, email, password_hash, phone) VALUES (?, ?, ?, ?)";
+
+    try (Connection conn = dataSource.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        
+        stmt.setString(1, user.getUsername());
+        stmt.setString(2, user.getEmail());
+        stmt.setString(3, user.getPassword_hash());
+        stmt.setString(4, user.getPhone());
+        
+        int rowsAffected = stmt.executeUpdate();
+        return rowsAffected; // usually 1 if success
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return -1; // indicate failure
     }
   }
 }
