@@ -23,11 +23,14 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Map;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.google.i18n.phonenumbers.NumberParseException;
@@ -50,6 +53,23 @@ public class RegistrationService {
     this.objectMapper = new ObjectMapper();
   }
 
+  /**
+   * Checks if the password is valid.
+   * A valid password must be at least 8 characters long,
+   * contain at least one special character, and at least one number.
+   *
+   * @param password The password to validate.
+   * @return true if valid, false otherwise.
+   */
+  public boolean isValidPassword(String password) {
+    if (password == null || password.length() < 8) {
+      return false;
+    }
+    boolean hasSpecial = password.matches(".*[!@#$%^&*()_+\\-\\[\\]{};':\"\\\\|,.<>/?].*");
+    boolean hasDigit = password.matches(".*[0-9].*");
+    return hasSpecial && hasDigit;
+  }
+
   /*
    * Handles user registration.
    * Validates email and phone number, checks for existing users,
@@ -65,6 +85,10 @@ public class RegistrationService {
 
     if (userExists(request.getUsername(), request.getEmail()))
       return 409;
+
+    if (!isValidPassword(request.getPassword())) {
+      return 400; // Bad Request
+    }
 
     User newUser = new User(
         request.getUsername(),
