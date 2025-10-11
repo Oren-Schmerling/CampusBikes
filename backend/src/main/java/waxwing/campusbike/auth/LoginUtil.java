@@ -1,6 +1,7 @@
 package waxwing.campusbike.auth;
 import java.sql.*;
 import io.github.cdimascio.dotenv.Dotenv;
+import waxwing.campusbike.auth.util.PasswordUtil;
 
 public class LoginUtil {
 
@@ -39,7 +40,7 @@ public class LoginUtil {
             if (rs.next()) {
                 // extract password_hash, use passwordUtil to verify the hashed passwords
                 String storedHash = rs.getString("password_hash");  
-                return passwordUtil.verifyPassword(plain_pass, storedHash) ? 0 : 1;
+                return PasswordUtil.verifyPassword(plain_pass, storedHash) ? 0 : 1;
             } else {
                 // user not found in db
                 return 4;

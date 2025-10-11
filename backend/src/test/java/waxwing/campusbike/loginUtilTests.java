@@ -8,16 +8,19 @@ import java.net.URISyntaxException;
 import waxwing.campusbike.auth.LoginUtil;
 
 import waxwing.campusbike.auth.registrationUtil;
-import waxwing.campusbike.auth.passwordUtil; 
+import waxwing.campusbike.auth.util.PasswordUtil;
+
 import java.util.UUID;
 import java.io.IOException;
 
 public class loginUtilTests {
 
+    // OLD TESTING FILE
+
     @Test
     void randomUser() throws URISyntaxException, IOException{
         String username = UUID.randomUUID().toString();
-        String hashedPassword = passwordUtil.hashPassword("password");
+        String hashedPassword = PasswordUtil.hashPassword("password");
         String email = username + "@umass.edu";
         int result =registrationUtil.registrationHandler(
             username,

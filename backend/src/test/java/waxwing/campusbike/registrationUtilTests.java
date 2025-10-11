@@ -1,8 +1,10 @@
 package waxwing.campusbike;
 import waxwing.campusbike.auth.registrationUtil;
+import waxwing.campusbike.auth.util.PasswordUtil;
+
 import org.junit.jupiter.api.Test;
 import waxwing.campusbike.auth.EmailValidity;
-import waxwing.campusbike.auth.passwordUtil; 
+
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.UUID;
 
@@ -30,7 +32,7 @@ public class registrationUtilTests {
   @Test
   void testRegistrationHandlerSuccess() throws URISyntaxException, IOException{
     String username = UUID.randomUUID().toString();
-    String hashedPassword = passwordUtil.hashPassword("password");
+    String hashedPassword = PasswordUtil.hashPassword("password");
     String email = username + "@umass.edu";
     int result =registrationUtil.registrationHandler(
       username,
@@ -45,7 +47,7 @@ public class registrationUtilTests {
   @Test
   void testRegistrationHandlerFailure() throws URISyntaxException, IOException{
     String username = UUID.randomUUID().toString();
-    String hashedPassword = passwordUtil.hashPassword("password");
+    String hashedPassword = PasswordUtil.hashPassword("password");
     String email = username + "@gmail.com";
     int result =registrationUtil.registrationHandler(
       username,

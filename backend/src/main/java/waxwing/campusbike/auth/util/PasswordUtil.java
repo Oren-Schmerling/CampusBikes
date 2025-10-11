@@ -1,9 +1,9 @@
-package waxwing.campusbike.auth;
+package waxwing.campusbike.auth.util;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 
-public class passwordUtil {
+public class PasswordUtil {
     private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     public static String hashPassword(String plainPassword) {
         if (plainPassword == null) {
