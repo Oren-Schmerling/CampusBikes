@@ -4,9 +4,7 @@ services:
     container_name: campusbike-frontend
     ports:
       - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8080
-      - NEXT_PUBLIC_APP_ENV=dev
+    env_file: ".env"
     volumes:
       - ./Frontend:/app
       - /app/node_modules
