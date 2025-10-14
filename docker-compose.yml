@@ -6,9 +6,7 @@ services:
       - "3000:3000"
     volumes:
       - ./Frontend:/app
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8080
-      - NEXT_PUBLIC_APP_ENV=dev
+    env_file: ".env"
     depends_on:
       - springboot
   springboot:

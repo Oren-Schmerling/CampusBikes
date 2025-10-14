@@ -11,10 +11,16 @@ The code is set up to run with `docker-compose`. Please install the latest stabl
 The project depends on some environment variables. You must create a `.env` file in the root directory of the repo. The following values are essential:
 
 ```
-POSTGRES_DB= ## the name of your database
-POSTGRES_URL= ## the url of your database
-POSTGRES_USER= ## the username you want to use to manage
-POSTGRES_PASSWORD= ## the password for your user
+## Database
+POSTGRES_DB
+POSTGRES_URL
+POSTGRES_USER
+POSTGRES_PASSWORD
+
+## Frontend
+NEXT_PUBLIC_API_URL
+NEXT_PUBLIC_APP_ENV
+```
 
 After starting up the volumes on docker, you should be able to see "Hello World!" printed on your screen at http://localhost:8080/hello
 
