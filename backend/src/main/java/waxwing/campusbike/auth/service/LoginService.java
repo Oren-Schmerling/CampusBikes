@@ -18,7 +18,7 @@ public class LoginService {
   private final ObjectMapper objectMapper;
 
   @Autowired
-  private DataSource ds;
+  private DataSource dataSource;
 
   @Autowired
   public LoginService(Env env) {
@@ -63,7 +63,7 @@ public class LoginService {
     // want to check hashed password in db
     String query = "SELECT password_hash FROM users WHERE username = ?";
 
-    try (Connection conn = ds.getConnection();
+    try (Connection conn = dataSource.getConnection();
       PreparedStatement stmt = conn.prepareStatement(query)) {
             // replace username in statement w/ input username
             stmt.setString(1, username);

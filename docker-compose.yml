@@ -1,26 +1,19 @@
 services:
   springboot:
-    image: openjdk:21-jdk-slim
+    image: local/springboot_app
     container_name: springboot_app
     build:
       context: ./backend
       dockerfile: Dockerfile
     working_dir: /backend
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_URL: ${POSTGRES_URL}
+    env_file: ".env"
     ports:
       - "8080:8080"
 
   postgres:
     image: postgres:latest
     container_name: postgres_db
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+    env_file: ".env"
     ports:
       - "5432:5432"
     healthcheck:
@@ -38,14 +31,14 @@ services:
     environment:
       PGRST_DB_URI: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       PGRST_DB_ANON_ROLE: ${POSTGRES_USER}
-      # PGRST_JWT_SECRET: todo: add this when we implement authentication
+      # PGRST_JWT_SECRET: TODO: add this when we implement authentication
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      test: ["CMD", "curl", "-f", "http://localhost:3001/"] #TODO move to env
       interval: 10s
       timeout: 5s
       retries: 5
     ports:
-      - "3000:3000"
+      - "3001:3001"
     depends_on:
       - postgres
 
