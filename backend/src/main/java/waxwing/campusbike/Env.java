@@ -6,13 +6,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class Env {
 
-  @Value("${POSTGREST_URL}")
-  private String POSTGREST_URL;
-
-  public String getPOSTGREST_URL() {
-    return POSTGREST_URL;
-  }
-  
   @Value("${POSTGRES_URL}")
   private String POSTGRES_URL;
 
