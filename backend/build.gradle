@@ -46,7 +46,7 @@ dependencies {
 	implementation 'commons-validator:commons-validator:1.9.0'
 	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
-
+	implementation 'commons-validator:commons-validator:1.9.0'
 	//made for in memory temp db for testing
 	testImplementation 'com.h2database:h2'
 }
