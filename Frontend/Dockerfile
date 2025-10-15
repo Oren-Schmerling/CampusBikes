@@ -1,6 +1,6 @@
 FROM node:20
 
-WORKDIR /frontend
+WORKDIR /app
 
 # Copy package files first to leverage Docker cache
 COPY package.json package-lock.json ./
