@@ -57,9 +57,7 @@ function FeatureCard({ icon, children }) {
   return (
     <div className="w-110 min-h-28 rounded-2xl outline outline-1 outline-offset-[-1px] outline-nearBlack backdrop-blur-lg">
       <div className="px-[30px] py-4 flex justify-start items-start gap-6">
-        <div className="w-20 h-20 flex-shrink-0">
-          {icon}
-        </div>
+        <div className="w-20 h-20 flex-shrink-0">{icon}</div>
         <div className="flex-1 text-nearBlack text-base font-normal font-['Poppins']">
           {children}
         </div>
@@ -103,14 +101,14 @@ function BikeImage() {
 
 function HeroSection() {
   return (
-    <section className="relative min-h-screen">
+    <section className="relative min-w-screen">
       <NavBar />
-      <div className="flex flex-col w-1/2 bg-lighterGray rounded-br-[25%] pl-[100px] pt-[50px] pb-[100px] gap-16 relative z-50">
+      <div className="flex flex-col w-1/2 bg-lighterGray rounded-br-[25%] pl-[100px] pt-[50px] pb-[100px] gap-8 relative z-50">
         <BigText />
         <LittleText />
         <JoinButton />
       </div>
-      <div className="absolute bottom-15 right-90 z-10">
+      <div className="absolute bottom-15 right-[10%] z-10">
         <BikeImage />
       </div>
     </section>
@@ -122,8 +120,8 @@ function FeaturesSection() {
     <section className="w-full py-25">
       <div className="flex flex-row w-full justify-center gap-25">
         <FeatureCard icon={<CheckIcon />}>
-          We've created a safe space to rent to trusted peers. All users are
-          UMass verified.
+          We&apos;ve created a safe space to rent to trusted peers. All users
+          are UMass verified.
         </FeatureCard>
 
         <FeatureCard icon={<AvatarIcon />}>
