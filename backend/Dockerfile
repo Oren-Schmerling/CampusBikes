@@ -18,7 +18,7 @@ COPY gradle ./gradle
 RUN chmod +x gradlew
 
 # Build the application
-RUN ./gradlew build --no-daemon -x test 
+RUN ./gradlew build --no-daemon -x test
 
 # Expose the port the app runs on
 EXPOSE 8080
