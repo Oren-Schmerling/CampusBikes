@@ -1,12 +1,8 @@
-import NavBar from "@/components/nav/navBar";
 import Link from "next/link";
 
 export default function LoginPage() {
   return (
     <div className="min-h-screen bg-lighterGray flex flex-col">
-      {/* NavBar */}
-      <NavBar />
-
       {/* Main Content */}
       <div className="flex flex-1 justify-center items-center">
         {/* Login Box */}
@@ -40,7 +36,7 @@ export default function LoginPage() {
 
           {/* Signup Prompt */}
           <p className="text-center text-gray-600 mt-6">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/signup" className="text-waxwingGreen font-medium">
               Sign up
             </Link>

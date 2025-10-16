@@ -1,12 +1,8 @@
-import NavBar from "@/components/nav/navBar";
 import Link from "next/link";
 
 export default function SignupPage() {
   return (
     <div className="min-h-screen bg-lighterGray flex flex-col">
-      {/* NavBar */}
-      <NavBar />
-
       {/* Main Content */}
       <div className="flex flex-1 justify-center items-center">
         {/* Signup Box */}
