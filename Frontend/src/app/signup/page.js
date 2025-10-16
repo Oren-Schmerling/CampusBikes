@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import NavBar from "@/components/nav/navBar";
 import Link from "next/link";
-import {signup }from "@/api/signup"; 
+import { signup } from "@/api/signup";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -36,7 +36,7 @@ export default function SignupPage() {
     console.debug(`field change: ${name} = ${value}`);
   };
 
-  
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
