@@ -1,7 +1,10 @@
 services:
   frontend:
-    build: ./Frontend
-    container_name: campusbike-frontend
+    image: local/campusbike_frontend
+    container_name: campusbike_frontend
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     env_file: ".env"
