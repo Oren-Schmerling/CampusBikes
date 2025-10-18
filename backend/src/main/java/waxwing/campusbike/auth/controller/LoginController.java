@@ -21,10 +21,7 @@ public class LoginController{
         this.loginService = loginService;
     }
 
-    /* 
-     * Springboot already has a security endpoint at /login, so use /signin to avoid conflict
-     */
-   @PostMapping("/signin")
+   @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> registerUser(@RequestBody LoginRequest request) {
         int statusCode = loginService.loginUser(request);
         Map<String, Object> response = new HashMap<>();
@@ -34,7 +31,7 @@ public class LoginController{
                 response.put("message", "Login successful.");
                 return ResponseEntity.ok(response);
             case 470:
-                response.put("message", "Invalid password.");
+                response.put("message", "Invalid username or password.");
                 return ResponseEntity.badRequest().body(response);
             case 471:
                 response.put("message", "Username does not exist.");

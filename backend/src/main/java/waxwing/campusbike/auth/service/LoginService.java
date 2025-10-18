@@ -20,7 +20,6 @@ public class LoginService {
   @Autowired
   private DataSource dataSource;
 
-  @Autowired
   public LoginService(Env env) {
     this.env = env;
     this.objectMapper = new ObjectMapper();
@@ -42,12 +41,13 @@ public class LoginService {
             return 470;
         case 2:
             // user dne
+            // maybe collapse this one into the invalid user/pass case for security?
             return 471;        
         case 3:
             // error case
             return 400;
         default:
-            return 401;
+            return 500;
     }
   }
 
