@@ -2,6 +2,7 @@ package waxwing.campusbike.auth.service;
 
 import waxwing.campusbike.types.dto.LoginRequest;
 import waxwing.campusbike.Env;
+import waxwing.campusbike.auth.util.JwtUtil;
 import waxwing.campusbike.auth.util.PasswordUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -25,32 +26,38 @@ public class LoginService {
     this.objectMapper = new ObjectMapper();
   }
 
-  /*
+/*
    * Handles logging a user in
    */
-  public int loginUser(LoginRequest login){
+  public Object loginUser(LoginRequest login){ // Change return type to Object or a DTO
     String username = login.getUsername(), password = login.getPassword();
     int validate_res = validateUser(username, password);
 
     switch(validate_res){
         case 0:
-            // valid user pass combo
-            return 200;
+            // valid user pass combo - THIS IS WHERE YOU RETURN THE JWT
+            
+            // 1. GENERATE THE JWT HERE
+            String jwt = JwtUtil.generateToken(username); // <-- Assuming a static method
+            
+            // 2. RETURN IT 
+            // This is just a conceptual return. In a real Spring API, you'd
+            // return a DTO wrapped in an HTTP 200 OK response.
+            return jwt; 
+            
         case 1:
             // pw does not match
-            return 470;
+            return 470; // This should be a Spring ResponseEntity with the status
         case 2:
             // user dne
-            // maybe collapse this one into the invalid user/pass case for security?
-            return 471;        
+            return 471; // This should be a Spring ResponseEntity with the status      
         case 3:
             // error case
-            return 400;
+            return 400; // This should be a Spring ResponseEntity with the status
         default:
-            return 500;
+            return 500; // This should be a Spring ResponseEntity with the status
     }
   }
-
   /*
    * This function will connect to the db and check if the user is there, and if so, if the stored pass matches
    * returns 0, 1, 2, 3

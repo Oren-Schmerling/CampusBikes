@@ -23,6 +23,18 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-json'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	// In your build.gradle's dependencies { ... } block
+
+	// 1. The JWT API
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+
+	// 2. The JWT Implementation
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
+
+	// 3. A JSON Processor (Jackson is most common)
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5' 
+
+	// Note: If you are not using Jackson, you can use jjwt-gson or jjwt-orgjson instead.
 	implementation 'org.postgresql:postgresql'
 	implementation 'commons-validator:commons-validator:1.6'
 	implementation 'io.github.cdimascio:dotenv-java:3.0.0'

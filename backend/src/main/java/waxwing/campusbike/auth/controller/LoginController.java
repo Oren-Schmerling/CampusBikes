@@ -12,7 +12,7 @@ import waxwing.campusbike.auth.service.LoginService;
 
 @RestController
 @RequestMapping("/auth")
-public class LoginController{
+public class LoginController {
 
     private final LoginService loginService;
 
@@ -21,26 +21,37 @@ public class LoginController{
         this.loginService = loginService;
     }
 
-   @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> registerUser(@RequestBody LoginRequest request) {
-        int statusCode = loginService.loginUser(request);
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, Object>> loginUser(@RequestBody LoginRequest request) {
+        // NOTE: We change the service method to return an Object to hold either a String (JWT) or an Integer (status code)
+        Object serviceResult = loginService.loginUser(request); 
         Map<String, Object> response = new HashMap<>();
 
-        switch (statusCode) {
-            case 200:
-                response.put("message", "Login successful.");
-                return ResponseEntity.ok(response);
-            case 470:
-                response.put("message", "Invalid username or password.");
-                return ResponseEntity.badRequest().body(response);
-            case 471:
-                response.put("message", "Username does not exist.");
-                return ResponseEntity.badRequest().body(response);
-            default:
-                response.put("message", "Error, status code: " + statusCode);
-                return ResponseEntity.status(statusCode >= 400 ? statusCode : 500).body(response);
+        if (serviceResult instanceof String jwt) {
+            // Case 1: Login was successful, and the service returned the JWT (String)
+            response.put("message", "Login successful.");
+            response.put("token", jwt); // <-- ADD THE JWT HERE
+            return ResponseEntity.ok(response);
+        
+        } else if (serviceResult instanceof Integer statusCode) {
+            // Case 2: Login failed, and the service returned a status code (Integer)
+            switch (statusCode) {
+                case 470:
+                    response.put("message", "Invalid username or password.");
+                    return ResponseEntity.badRequest().body(response);
+                case 471:
+                    response.put("message", "Username does not exist.");
+                    // Return 401 Unauthorized or 400 Bad Request for security reasons
+                    return ResponseEntity.status(401).body(response); 
+                default:
+                    response.put("message", "An unexpected error occurred.");
+                    return ResponseEntity.status(500).body(response);
+            }
+            
+        } else {
+            // Fallback for an unhandled scenario
+            response.put("message", "Internal server error during login processing.");
+            return ResponseEntity.internalServerError().body(response);
         }
     }
-
-
 }
