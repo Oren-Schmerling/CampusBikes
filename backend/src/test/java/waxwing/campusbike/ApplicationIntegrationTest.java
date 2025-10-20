@@ -1,6 +1,7 @@
 package waxwing.campusbike;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.web.client.RestTemplate;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,9 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+@SpringBootTest
 public class ApplicationIntegrationTest {
 
-  private static final String POSTGREST_HEALTH_URL = "http://localhost:3001/"; // TODO: pull from env
+  private static final String POSTGREST_HEALTH_URL = "http://localhost:3000/";
   private static final int TIMEOUT_SECONDS = 10;
 
   @Test

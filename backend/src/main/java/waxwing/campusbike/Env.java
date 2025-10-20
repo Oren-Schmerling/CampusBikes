@@ -12,7 +12,7 @@ public class Env {
   public String getPOSTGREST_URL() {
     return POSTGREST_URL;
   }
-  
+
   @Value("${POSTGRES_URL}")
   private String POSTGRES_URL;
 
