@@ -1,20 +1,22 @@
 package waxwing.campusbike.auth.util;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-
 public class PasswordUtil {
-    private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    public static String hashPassword(String plainPassword) {
-        if (plainPassword == null) {
-            throw new IllegalArgumentException("Password and hash cannot be null");
-        }
-        return passwordEncoder.encode(plainPassword);
+  private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+  public static String hashPassword(String plainPassword) {
+    if (plainPassword == null) {
+      throw new IllegalArgumentException("Password and hash cannot be null");
     }
-    public static boolean verifyPassword(String plainPassword, String hashedPassword) {
-        if (plainPassword == null || hashedPassword == null) {
-            throw new IllegalArgumentException("Password and hash cannot be null");
-        }
-        return passwordEncoder.matches(plainPassword, hashedPassword);
+    return passwordEncoder.encode(plainPassword);
+  }
+
+  public static boolean verifyPassword(String plainPassword, String hashedPassword) {
+    if (plainPassword == null || hashedPassword == null) {
+      throw new IllegalArgumentException("Password and hash cannot be null");
     }
+    return passwordEncoder.matches(plainPassword, hashedPassword);
+  }
 }
