@@ -16,10 +16,13 @@ const ListingCard = ({
   pricePerHour,
   seller,
   rating,
+  onMessageSeller, // functions to message seller and book a bike
+  onBook,
 }) => {
   return (
-    <div className="w-64 bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200">
-      {/* Image area, temporary placeholder, need to format correctly for what backend returns*/}
+    <div className="w-75 bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200 
+    transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105 hover:-translate-y-1 cursor-pointer">
+      {/* Image area, temporary placeholder, need to format correctly for what backend returns */}
       <div className="relative w-full h-40 bg-gray-100">
         <Image
           src={imageSrc || "/bike.jpg"}
@@ -44,17 +47,15 @@ const ListingCard = ({
           
           {/* Put price here */}
           <div className="text-green-600 font-semibold">
-            {Array.from({ length: 3 }).map((_, i) => (
+            {Array.from({ length: 3 }).map((_, j) => (
               <span
-                key={i}
+                key={j}
                 className={`text-lg leading-none ${
                   // may want to adjust the thresholds here, 
                   // currently cheapest is (0-5], mid (5-10], expensive >= 10
-                  pricePerHour > 5*i ? "text-green-500" : "text-gray-300"
+                  pricePerHour > 5*j ? "text-green-500" : "text-gray-300"
                 }`}
-              >
-                $
-              </span>
+              >$</span>
             ))}
             <span className="text-gray-700 ml-1">{pricePerHour} / hour</span>
           </div>
@@ -75,19 +76,25 @@ const ListingCard = ({
                 className={`text-lg leading-none ${
                   j < rating ? "text-green-500" : "text-gray-300"
                 }`}
-              >
-                ★
-              </span>
+              >★</span>
             ))}
           </div>
         </div>
 
         {/* Message and Book buttons, add functionality to them later */}
         <div className="flex justify-between">
-          <button className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300 transition">
+          <button 
+            // call onMessageSeller function when clicked, put proper parameters later when function is defined
+            onClick={() => onMessageSeller?.()}
+            className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300 transition"
+          >
             Message Seller
           </button>
-          <button className="px-4 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition">
+          <button
+            // call onBook function when clicked, put proper parameters later when function is defined
+            onClick={() => onBook?.()}
+            className="px-4 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition"
+          >
             Book
           </button>
         </div>
