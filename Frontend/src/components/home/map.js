@@ -3,10 +3,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPinned } from 'lucide-react';
 
+/* 
+Note: leaflet.js is a library for making interactive maps, 
+specifically things like creating markers, zooming, panning, etc
+Leaflet does not provide a map tile, which is what openstreetmap is for
+*/
+
 const MapCard = ({ bikes, onBikeClick }) => {
-  const mapRef = useRef(null); // reference to the map itself
-  const mapInstanceRef = useRef(null); // reference to the map's instance
-  const markersRef = useRef([]); // reference to the markers displayed on the map
+  const mapRef = useRef(null); // reference to the div for the map's rendering
+  const mapInstanceRef = useRef(null); // reference to the map's instance/the leaflet map object
+  const markersRef = useRef([]); // reference to the markers displayed on the map (should be the bikes eventually)
   const [isMapLoaded, setIsMapLoaded] = useState(false); // state to track whether the map is loaded
 
   // Initialize map
@@ -20,13 +26,15 @@ const MapCard = ({ bikes, onBikeClick }) => {
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js'; // leaflet js script
     script.onload = () => {
+      // Note window.L is a leaflet library from the script
       if (mapRef.current && window.L && !mapInstanceRef.current) {
-        // initialize map to UMass campus areas with coordinates
+        // initialize map in div to UMass campus areas with coordinates
         // 15 is the zoom level
         const map = window.L.map(mapRef.current).setView([42.3870, -72.5289], 15);
         
+        // add a tile layer to show map png, use openstreetmap
         window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">© OpenStreetMap</a>',
+          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
           maxZoom: 22
         }).addTo(map);
 
@@ -37,24 +45,26 @@ const MapCard = ({ bikes, onBikeClick }) => {
     // append the map to the DOM
     document.body.appendChild(script);
 
+    // cleanup function, should be ran when the user leaves the page
     return () => {
-    //   if (mapInstanceRef.current) {
-    //     mapInstanceRef.current.remove();
-    //     mapInstanceRef.current = null;
-    //   }
-        mapInstanceRef
+      // destroy map component on the DOM when user moves away from the page
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
     };
   }, []);
 
   // Update markers when bikes data changes
   useEffect(() => {
+    // if map is not loaded or there are issues with leaflet then skip
     if (!isMapLoaded || !mapInstanceRef.current || !window.L) return;
 
-    // Clear existing markers
+    // Clear existing markers to update
     markersRef.current.forEach(marker => marker.remove());
     markersRef.current = [];
 
-    // Create custom icon
+    // Create custom icon (may want ot change this later)
     const bikeIcon = window.L.divIcon({
       className: 'custom-bike-marker',
       html: `<div style="background-color: #dc2626; width: 32px; height: 32px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
@@ -64,9 +74,10 @@ const MapCard = ({ bikes, onBikeClick }) => {
 
     // Add new markers
     bikes.forEach(bike => {
-      const marker = window.L.marker([bike.lat, bike.lng], { icon: bikeIcon })
-        .addTo(mapInstanceRef.current);
+      // haven't done too much research, but leaflet needs lat long pair, might cause issues if we are storing addresses
+      const marker = window.L.marker([bike.lat, bike.lng], { icon: bikeIcon }).addTo(mapInstanceRef.current);
       
+      // might want to add functionality here to book a bike here?
       marker.bindPopup(`
         <div style="text-align: center; padding: 8px;">
           <strong>Bike #${bike.id}</strong><br/>
@@ -76,11 +87,12 @@ const MapCard = ({ bikes, onBikeClick }) => {
         </div>
       `);
 
-    // add functionality when a bike is clicked?
+    //   add functionality when a bike is clicked?
     //   if (onBikeClick) {
     //     marker.on('click', () => onBikeClick(bike));
     //   }
       
+      // update current markers
       markersRef.current.push(marker);
     });
   }, [bikes, isMapLoaded, onBikeClick]);
@@ -100,6 +112,7 @@ const MapCard = ({ bikes, onBikeClick }) => {
       {/* Map Container */}
       <div className="flex-1 relative">
         <div ref={mapRef} className="w-full h-full" />
+        {/* Have loading map display if map is still rendering */}
         {!isMapLoaded && (
           <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center">
             <div className="text-gray-600">Loading map...</div>
