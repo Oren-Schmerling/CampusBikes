@@ -3,9 +3,19 @@
 import ListingCard from "@/components/listings/listingCard";
 import SearchBar from "@/components/listings/searchBar";
 import { useEffect, useState } from "react";
+import { LucideIcon, Star } from "lucide-react";
 
 // this may eventually be complex enough to be pulled into its own component file
 function LeftBar() {
+  const [price, setPrice] = useState(25);
+  const [showBikes, setShowBikes] = useState(true);
+  const [showScooters, setShowScooters] = useState(true);
+  const [rating, setRating] = useState(0);
+
+  const handleBikeChange = () => {setShowBikes(!showBikes)};
+  const handleScooterChange = () => {setShowScooters(!showScooters)};
+  const handleStars = (value) => {setRating(value)};
+  
   return (
     <div className="w-64 h-full bg-lighterGray">
       <div className="w-full h-6 text-center justify-center text-xl py-2 pb-32">
@@ -15,29 +25,64 @@ function LeftBar() {
         <div className="w-full h-6 text-center justify-center text-lg">
           Type
         </div>
-        <div className="w-full h-6 text-center justify-center">
-          Placeholder for bikes
+          <label className="flex items-center justify-start space-x-4 w-full pl-4">
+            <input
+              type="checkbox"
+              checked={showScooters}
+              onChange={handleScooterChange}
+              className="accent-[var(--color-waxwingGreen)] w-6 h-6"
+            />
+            <span className="text-lg flex-1">
+              Bikes
+            </span>
+          </label>
+          <label className="flex items-center justify-start space-x-4 w-full pl-4">
+            <input
+              type="checkbox"
+              checked={showBikes}
+              onChange={handleBikeChange}
+              className="accent-[var(--color-waxwingGreen)] w-6 h-6"
+            />
+            <span className="text-lg flex-1">
+              Scooters
+            </span>
+          </label>
         </div>
-        <div className="w-full h-6 text-center justify-center">
-          Placeholder for scooters
+    <div className="space-y-4 pb-32 w-full">
+      <div className="text-center text-lg font-medium">Hourly Price</div>
+      <div className="flex flex-col items-center w-full space-y-2">
+        <input
+          type="range"
+          min="0"
+          max="25"
+          value={price}
+          onChange={(e) => setPrice(Number(e.target.value))}
+          className="w-3/4 h-2 accent-[var(--color-waxwingGreen)] rounded-lg"
+        />
+        <div className="flex justify-mid text-sm font-semibold text-gray-700">
+          <span>${price}</span>
         </div>
+    </div>
+    </div>
+    <div className="space-y-2 w-full flex flex-col items-center">
+      {/* Stars */}
+      <div className="flex space-x-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            fill={rating >= star ? "var(--color-waxwingGreen)" : "none"}
+            stroke="currentColor"
+            className={`w-8 h-8 cursor-pointer ${
+              rating >= star ? "text-[var(--color-waxwingGreen)]" : "text-gray-300"
+            }`}
+            onClick={() => handleStars(star)}
+          />
+        ))}
       </div>
-      <div className="space-y-4 pb-32">
-        <div className="w-full h-6 text-center justify-center text-lg">
-          Price
-        </div>
-        <div className="w-full h-6 text-center justify-center">
-          Placeholder for price slider
-        </div>
-      </div>
-      <div className="space-y-4 pb-32">
-        <div className="w-full h-6 text-center justify-center text-lg">
-          Minimum Seller Rating
-        </div>
-        <div className="w-full h-6 text-center justify-center">
-          Placeholder for Star Selector
-        </div>
-      </div>
+      <span className="text-center text-lg">
+        {rating > 0 ? `${rating} star${rating > 1 ? "s" : ""}+` : "Any rating"}
+      </span>
+    </div>
     </div>
   );
 }
