@@ -18,18 +18,12 @@ POSTGRES_URL= ## the url of your database
 POSTGRES_USER= ## the username you want to use to manage
 POSTGRES_PASSWORD= ## the password for your user
 
+```
+
 After starting up the volumes on docker, you should be able to see "Hello World!" printed on your screen at http://localhost:8080/hello
 
 You can look at the PostgreSQL database by logging into it. It's on port `5432` and you can connect to it with the following command: `psql -h localhost -p 5432 -U postgres_user -d bikedb`. You'll be prompted to enter the password which is visible in your .env file.
 
-@TODO: document postgrest
 You can look at the PostgreSQL database by logging into it. It's on port `5432` and you can connect to it with the following command: `psql -h localhost -p 5432 -U postgres_user -d bikedb`. You'll be prompted to enter the password which is visible in your .env file.
 
-@todo: document postgrest
-
 When you're done running the server, be sure to stop the process and then run `docker-compose down -v` to tear down the docker images.
-```
-
-```
-
-```
