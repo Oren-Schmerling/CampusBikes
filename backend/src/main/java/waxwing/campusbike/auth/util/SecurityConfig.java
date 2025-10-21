@@ -1,4 +1,4 @@
-package waxwing.campusbike.auth;
+package waxwing.campusbike.auth.util;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

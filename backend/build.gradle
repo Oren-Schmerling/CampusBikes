@@ -2,7 +2,9 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.6'
 	id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
 }
+
 
 group = 'waxwing'
 version = '0.0.1-SNAPSHOT'
@@ -20,16 +22,33 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-  implementation 'org.springframework.boot:spring-boot-starter-json'
+    implementation 'org.springframework.boot:spring-boot-starter-json'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'commons-validator:commons-validator:1.9.0'
   implementation 'com.googlecode.libphonenumber:libphonenumber:9.0.15'
-  runtimeOnly 'org.postgresql:postgresql'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	// In your build.gradle's dependencies { ... } block
+
+	// 1. The JWT API
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+
+	// 2. The JWT Implementation
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
+
+	// 3. A JSON Processor (Jackson is most common)
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5' 
+
+	// Note: If you are not using Jackson, you can use jjwt-gson or jjwt-orgjson instead.
+	implementation 'org.postgresql:postgresql'
+	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'commons-validator:commons-validator:1.9.0'
 	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+
+	//made for in memory temp db for testing
+	testImplementation 'com.h2database:h2'
 }
 
 tasks.named('test') {

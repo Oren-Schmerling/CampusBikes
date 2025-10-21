@@ -38,22 +38,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql # Mount the schema file
-  postgrest:
-    image: postgrest/postgrest
-    container_name: database_api
-    environment:
-      PGRST_DB_URI: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      PGRST_DB_ANON_ROLE: ${POSTGRES_USER}
-      # PGRST_JWT_SECRET: TODO: add this when we implement authentication
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/"] #TODO move to env
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    ports:
-      - "3001:3001"
-    depends_on:
-      - postgres
 
 volumes:
   postgres_data:
