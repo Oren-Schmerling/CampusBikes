@@ -1,5 +1,18 @@
 import Image from "next/image";
 
+/* 
+Some TODO stuff:
+
+1. Integrate w/ listing backend
+2. when the browser is compressed or stretched the cards can be weird and overlap, probably want to fix formatting
+3. margins between edges of page and between cards is inconsistent 
+(more space on left and right margins than between cards)
+4. add default image?
+5. Finalize color schemes in the card 
+6. card size is smaller than the figma page (not sure if this is a big deal though)
+
+*/
+
 /*
 Package for icons used in the listing card component
 currently using MapPin and User icons from lucide-react
@@ -21,7 +34,7 @@ const ListingCard = ({
 }) => {
   return (
     <div className="w-75 bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200 
-    transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105 hover:-translate-y-1 cursor-pointer">
+    transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105 hover:-translate-y-1">
       {/* Image area, temporary placeholder, need to format correctly for what backend returns */}
       <div className="relative w-full h-40 bg-gray-100">
         <Image
@@ -86,14 +99,14 @@ const ListingCard = ({
           <button 
             // call onMessageSeller function when clicked, put proper parameters later when function is defined
             onClick={() => onMessageSeller?.()}
-            className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300 transition"
+            className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300 transition cursor-pointer"
           >
             Message Seller
           </button>
           <button
             // call onBook function when clicked, put proper parameters later when function is defined
             onClick={() => onBook?.()}
-            className="px-4 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition"
+            className="px-4 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition cursor-pointer"
           >
             Book
           </button>
