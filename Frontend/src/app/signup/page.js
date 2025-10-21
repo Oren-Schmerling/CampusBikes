@@ -95,7 +95,7 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen bg-lighterGray flex flex-col">
-      {/*<NavBar />*/}
+      <NavBar />
 
       <div className="flex flex-1 justify-center items-center">
         <div className="bg-gray-100 rounded-2xl p-10 w-full max-w-md shadow-lg">
