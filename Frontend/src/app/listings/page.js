@@ -3,9 +3,24 @@
 import ListingCard from "@/components/listings/listingCard";
 import SearchBar from "@/components/listings/searchBar";
 import { useEffect, useState } from "react";
+import { LucideIcon, Star } from "lucide-react";
 
 // this may eventually be complex enough to be pulled into its own component file
-function LeftBar() {
+function LeftBar({
+  showBikes,
+  setShowBikes,
+  showScooters,
+  setShowScooters,
+  price,
+  setPrice,
+  rating,
+  setRating
+}) {
+
+  const handleBikeChange = () => {setShowBikes(!showBikes)};
+  const handleScooterChange = () => {setShowScooters(!showScooters)};
+  const handleStars = (value) => {setRating(value)};
+
   return (
     <div className="w-64 h-full bg-lighterGray">
       <div className="w-full h-6 text-center justify-center text-xl py-2 pb-32">
@@ -15,34 +30,91 @@ function LeftBar() {
         <div className="w-full h-6 text-center justify-center text-lg">
           Type
         </div>
-        <div className="w-full h-6 text-center justify-center">
-          Placeholder for bikes
-        </div>
-        <div className="w-full h-6 text-center justify-center">
-          Placeholder for scooters
+        <label className="flex items-center justify-start space-x-4 w-full pl-4">
+          <input
+            type="checkbox"
+            checked={showBikes}
+            onChange={handleBikeChange}
+            className="accent-[var(--color-waxwingGreen)] w-6 h-6"
+          />
+          <span className="text-lg flex-1 text-center">Bikes</span>
+        </label>
+        <label className="flex items-center justify-start space-x-4 w-full pl-4">
+          <input
+            type="checkbox"
+            checked={showScooters}
+            onChange={handleScooterChange}
+            className="accent-[var(--color-waxwingGreen)] w-6 h-6"
+          />
+          <span className="text-lg flex-1 text-center">Scooters</span>
+        </label>
+      </div>
+
+      <div className="space-y-4 pb-32 w-full">
+        <div className="text-center text-lg font-medium">Hourly Price</div>
+        <div className="flex flex-col items-center w-full space-y-2">
+          <input
+            type="range"
+            min="0"
+            max="25"
+            value={price}
+            onChange={(e) => setPrice(Number(e.target.value))}
+            className="w-3/4 h-2 accent-[var(--color-waxwingGreen)] rounded-lg"
+          />
+          <div className="flex justify-mid text-sm font-semibold text-gray-700">
+            <span>${price}</span>
+          </div>
         </div>
       </div>
-      <div className="space-y-4 pb-32">
-        <div className="w-full h-6 text-center justify-center text-lg">
-          Price
+
+      <div className="space-y-2 w-full flex flex-col items-center">
+        <div className="flex space-x-1">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Star
+              key={star}
+              fill={rating >= star ? "var(--color-waxwingGreen)" : "none"}
+              stroke="currentColor"
+              className={`w-8 h-8 cursor-pointer ${
+                rating >= star ? "text-[var(--color-waxwingGreen)]" : "text-gray-300"
+              }`}
+              onClick={() => handleStars(star)}
+            />
+          ))}
         </div>
-        <div className="w-full h-6 text-center justify-center">
-          Placeholder for price slider
-        </div>
-      </div>
-      <div className="space-y-4 pb-32">
-        <div className="w-full h-6 text-center justify-center text-lg">
-          Minimum Seller Rating
-        </div>
-        <div className="w-full h-6 text-center justify-center">
-          Placeholder for Star Selector
-        </div>
+        <span className="text-center text-lg">
+          {rating > 0 ? `${rating} star${rating > 1 ? "s" : ""}+` : "Any rating"}
+        </span>
       </div>
     </div>
   );
 }
 
 export default function ListingsPage() {
+
+  const [price, setPrice] = useState(25);
+  const [showBikes, setShowBikes] = useState(true);
+  const [showScooters, setShowScooters] = useState(true);
+  const [rating, setRating] = useState(0);
+
+  const listings = [
+    { id: 1, imageSrc: "/bike.jpg", model: "Bike", distance: 2.5, pricePerHour: 15, seller: "JohnDoe123", rating: 4 },
+    { id: 2, imageSrc: "/scooter.jpg", model: "Scooter", distance: 1.2, pricePerHour: 1, seller: "JaneSmith456", rating: 5 },
+    { id: 3, imageSrc: "/bike.jpg", model: "Bike", distance: 0.8, pricePerHour: 8, seller: "MikeBlue789", rating: 3 },
+    { id: 4, imageSrc: "/scooter.jpg", model: "Scooter", distance: 3.4, pricePerHour: 12, seller: "AliceGreen321", rating: 4 },
+    { id: 5, imageSrc: "/bike.jpg", model: "Bike", distance: 2.0, pricePerHour: 5, seller: "BobWhite654", rating: 2 },
+    { id: 6, imageSrc: "/scooter.jpg", model: "Scooter", distance: 4.1, pricePerHour: 20, seller: "CharlieBrown987", rating: 5 },
+    { id: 7, imageSrc: "/bike.jpg", model: "Bike", distance: 1.5, pricePerHour: 7, seller: "DianaYellow159", rating: 4 },
+    { id: 8, imageSrc: "/scooter.jpg", model: "Scooter", distance: 2.8, pricePerHour: 3, seller: "EthanPurple753", rating: 3 },
+  ];
+
+  const filtered = listings.filter((item) => {
+    if (item.model === "Bike" && !showBikes) return false;
+    if (item.model === "Scooter" && !showScooters) return false;
+    if (item.pricePerHour > price) return false;
+    if (item.rating < rating) return false;
+
+    return true;
+  });
 
   // state variables
   const [bikes, setBikes] = useState([]);
@@ -116,7 +188,16 @@ export default function ListingsPage() {
 return (
     <div className="flex h-screen bg-white">      
       {/* Filter sidebar */}
-      <LeftBar />
+      <LeftBar
+        showBikes={showBikes}
+        setShowBikes={setShowBikes}
+        showScooters={showScooters}
+        setShowScooters={setShowScooters}
+        price={price}
+        setPrice={setPrice}
+        rating={rating}
+        setRating={setRating}
+      />
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Search bar, fixed at top */}
@@ -155,95 +236,21 @@ return (
               )} */}
 
               {/* Temporary hardcoded listing cards for layout testing */}
-              <ListingCard
-                key={1}
-                imageSrc="/bike.jpg"
-                model="Bike"
-                distance={2.5}
-                pricePerHour={15}
-                seller="JohnDoe123"
-                rating={4}
-                onMessageSeller={handleMessageSeller}
-                onBook={handleBook}
-              />
-              <ListingCard
-                key={2}
-                imageSrc="/scooter.jpg"
-                model="Scooter"
-                distance={1.2}
-                pricePerHour={1}
-                seller="JaneSmith456"
-                rating={5}
-                onMessageSeller={handleMessageSeller}
-                onBook={handleBook}
-              />
-              <ListingCard
-                key={3}
-                imageSrc="/bike.jpg"
-                model="Bike"
-                distance={0.8}
-                pricePerHour={8}
-                seller="MikeBlue789"
-                rating={3}
-                onMessageSeller={handleMessageSeller}
-                onBook={handleBook}
-              />
-              <ListingCard
-                key={4}
-                imageSrc="/scooter.jpg"
-                model="Scooter"
-                distance={3.4}
-                pricePerHour={12}
-                seller="AliceGreen321"
-                rating={4}
-                onMessageSeller={handleMessageSeller}
-                onBook={handleBook}
-              />
-              <ListingCard
-                key={5}
-                imageSrc="/bike.jpg"
-                model="Bike"
-                distance={2.0}
-                pricePerHour={5}
-                seller="BobWhite654"
-                rating={2}
-                onMessageSeller={handleMessageSeller}
-                onBook={handleBook}
-              /> 
-              <ListingCard
-                key={6}
-                imageSrc="/scooter.jpg"
-                model="Scooter"
-                distance={4.1}
-                pricePerHour={20}
-                seller="CharlieBrown987"
-                rating={5}
-                onMessageSeller={handleMessageSeller}
-                onBook={handleBook}
-              />
-              <ListingCard
-                key={7}
-                imageSrc="/bike.jpg"
-                model="Bike"
-                distance={1.5}
-                pricePerHour={7}
-                seller="DianaYellow159"
-                rating={4}
-                onMessageSeller={handleMessageSeller}
-                onBook={handleBook}
-              />
-              <ListingCard
-                key={8}
-                imageSrc="/scooter.jpg"
-                model="Scooter"
-                distance={2.8}
-                pricePerHour={3}
-                seller="EthanPurple753"
-                rating={3}
-                onMessageSeller={handleMessageSeller}
-                onBook={handleBook}
-              />
-
+              
+              {filtered.map((listing) => (
+                <ListingCard
+                  key={listing.id}
+                  imageSrc={listing.imageSrc}
+                  model={listing.model}
+                  distance={listing.distance}
+                  pricePerHour={listing.pricePerHour}
+                  seller={listing.seller}
+                  rating={listing.rating}
+                  onMessageSeller={handleMessageSeller}
+                  onBook={handleBook}
+                />
+              ))}
+              
             </div>
           </div>
         </main>
