@@ -5,11 +5,19 @@ public class User {
   public String email;
   public String password; // This is raw password and later hashed before storing in db
   public String phone;
+  public Long id;
 
   public User(String username, String email, String password) {
     this.username = username;
     this.email = email;
     this.password = password;
+  }
+
+  public User(Long id, String username, String email, String phone) {
+    this.id = id;
+    this.username = username;
+    this.email = email;
+    this.phone = phone;
   }
 
   public String getUsername() {
@@ -44,4 +52,11 @@ public class User {
     this.phone = phone;
   }
 
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
 }

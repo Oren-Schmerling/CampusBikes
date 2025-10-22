@@ -9,28 +9,32 @@ import { Bike, ChevronRight } from 'lucide-react';
 const HomePage = () => {
   const [bikes, setBikes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const router = useRouter();
 
-  const router = useRouter(); // to route to listing page
-
-  // Fetch bike locations from backend
   useEffect(() => {
-    fetchBikes();
-  }, []);
+    // Only run auth check once router is ready
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    console.log('Checking auth token in HomePage useEffect', token);
+    if (!token) {
+      console.log('No token found, redirecting to /');
+      router.replace('/');
+    } else {
+      console.log('Token found ✅');
+      fetchBikes();
+    }
+
+    setCheckingAuth(false);
+  }, [router]);
 
   const fetchBikes = async () => {
     try {
       setLoading(true);
-      
-      // const response = await fetch('http://localhost:8080/');
-      // const data = await response.json();
-      
-      // Mock data for demo
       const mockBikes = [
         { id: 1, lat: 42.3870, lng: -72.5270, available: true },
         { id: 2, lat: 42.3900, lng: -72.5250, available: true },
         { id: 3, lat: 42.3790, lng: -72.5300, available: false },
       ];
-      
       setBikes(mockBikes);
     } catch (error) {
       console.error('Error fetching bikes:', error);
@@ -39,11 +43,14 @@ const HomePage = () => {
     }
   };
 
-  const handleBikeClick = (bike) => {
-    console.log('Bike clicked:', bike);
-    // Handle bike selection, implement later
-  };
-
+  // While checking for token, don't render anything
+  if (checkingAuth) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-gray-600">Checking authentication...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -53,12 +60,11 @@ const HomePage = () => {
             <div className="text-gray-600">Loading bikes...</div>
           </div>
         ) : (
-          <MapCard bikes={bikes} onBikeClick={handleBikeClick} />
+          <MapCard bikes={bikes} onBikeClick={(bike) => console.log(bike)} />
         )}
       </div>
 
       <div className="w-1/2 p-4 flex flex-col gap-4">
-        {/* Find listings card */}
         <button
           onClick={() => router.push('/listings')}
           className="flex-1 bg-white rounded-3xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer group"
@@ -67,37 +73,23 @@ const HomePage = () => {
             <div className="px-6 py-6 flex items-center justify-between">
               <h2 className="text-3xl font-bold text-gray-900">Find Bike Listings</h2>
             </div>
-            
             <div className="flex-1 flex items-center justify-center relative">
               <div className="relative w-full h-64 flex items-center justify-center">
-                  <Image
-                    src="/HomePageImg.png"
-                    alt="Rent a bike picture"
-                    fill
-                  />
+                <Image src="/HomePageImg.png" alt="Rent a bike picture" fill />
               </div>
             </div>
-            
             <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
               <ChevronRight className="w-6 h-6 text-green-600" />
             </div>
           </div>
         </button>
-        
-        {/* 
-        Rent your bike card 
-        Need to figure out where this will go, form, separate page, etc
-        Might want to update later to match figma more, just placeholder text and icon for now
-        */}
-        <button
-          className="flex-1 bg-white rounded-3xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer group"
-        >
+
+        <button className="flex-1 bg-white rounded-3xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer group">
           <div className="h-full flex items-center justify-between px-8">
             <h2 className="text-5xl font-bold text-gray-900">Rent Out Your Bike</h2>
-            <Bike size={150} className=''/>
+            <Bike size={150} />
           </div>
         </button>
-
       </div>
     </div>
   );
