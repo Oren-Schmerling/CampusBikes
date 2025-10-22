@@ -29,7 +29,7 @@ const NavItem = (icon, text, url = "/") => {
 
 const NavBar = () => {
   return (
-    <div className="fixed w-full bg-lightGray inline-flex justify-center items-center z-1000">
+    <div className="w-full bg-lightGray inline-flex justify-center items-center">
       {NavItem("accountCircle.svg", "Log in", "/login")}
       {NavItem("plusCircle.svg", "Sign up", "/signup")}
       {NavItem("chat.svg", "Contact us", "/contact")}

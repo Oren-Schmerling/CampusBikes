@@ -2,7 +2,9 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.6'
 	id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
 }
+
 
 group = 'waxwing'
 version = '0.0.1-SNAPSHOT'
@@ -41,9 +43,12 @@ dependencies {
 	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'commons-validator:commons-validator:1.9.0'
 	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 
+	//made for in memory temp db for testing
+	testImplementation 'com.h2database:h2'
 }
 
 tasks.named('test') {

@@ -1,3 +1,4 @@
+import NavBar from "@/components/nav/navBar";
 import Link from "next/link";
 
 function BigText() {
@@ -100,13 +101,14 @@ function BikeImage() {
 
 function HeroSection() {
   return (
-    <section className="relative min-w-screen">
-      <div className="flex flex-col w-1/2 bg-lighterGray rounded-br-[25%] pl-[100px] pt-[50px] pb-[100px] gap-8 relative z-50">
+    <section className="relative h-180">
+
+      <div className="flex flex-col w-1/2 bg-lighterGray rounded-br-[25%] pl-[100px] pt-[50px] pb-[100px] gap-16 relative z-50">
         <BigText />
         <LittleText />
         <JoinButton />
       </div>
-      <div className="absolute bottom-15 right-[10%] z-10">
+      <div className="absolute bottom-15 right-60 z-10">
         <BikeImage />
       </div>
     </section>
@@ -115,7 +117,7 @@ function HeroSection() {
 
 function FeaturesSection() {
   return (
-    <section className="w-full py-25">
+    <section className="w-full py-10">
       <div className="flex flex-row w-full justify-center gap-25">
         <FeatureCard icon={<CheckIcon />}>
           We&apos;ve created a safe space to rent to trusted peers. All users
