@@ -4,6 +4,7 @@ import ListingCard from "@/components/listings/listingCard";
 import SearchBar from "@/components/listings/searchBar";
 import { useEffect, useState } from "react";
 import { LucideIcon, Star } from "lucide-react";
+import { createListing } from "@/api/createListing";
 
 // this may eventually be complex enough to be pulled into its own component file
 function LeftBar({
@@ -17,9 +18,9 @@ function LeftBar({
   setRating
 }) {
 
-  const handleBikeChange = () => {setShowBikes(!showBikes)};
-  const handleScooterChange = () => {setShowScooters(!showScooters)};
-  const handleStars = (value) => {setRating(value)};
+  const handleBikeChange = () => { setShowBikes(!showBikes) };
+  const handleScooterChange = () => { setShowScooters(!showScooters) };
+  const handleStars = (value) => { setRating(value) };
 
   return (
     <div className="w-64 h-full bg-lighterGray">
@@ -74,9 +75,8 @@ function LeftBar({
               key={star}
               fill={rating >= star ? "var(--color-waxwingGreen)" : "none"}
               stroke="currentColor"
-              className={`w-8 h-8 cursor-pointer ${
-                rating >= star ? "text-[var(--color-waxwingGreen)]" : "text-gray-300"
-              }`}
+              className={`w-8 h-8 cursor-pointer ${rating >= star ? "text-[var(--color-waxwingGreen)]" : "text-gray-300"
+                }`}
               onClick={() => handleStars(star)}
             />
           ))}
@@ -89,12 +89,151 @@ function LeftBar({
   );
 }
 
+//Could be a compnent and modified to be reusable
+function CreateListingModal({ setIsOpen }) {
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    price: "",
+    location: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("Form submitted:", formData);
+    const result = await createListing(formData);
+    console.log("Create response", { result });
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-black/90"
+        onClick={() => setIsOpen(false)}
+      />
+
+      <div className="relative bg-gray-100 rounded-2xl p-10 w-full max-w-md shadow-2xl z-10">
+        <button
+          onClick={() => setIsOpen(false)}
+          className="absolute top-4 right-4 text-gray-500 hover:text-nearBlack transition-colors"
+          aria-label="Close"
+        >
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+
+        <h2 className="text-3xl font-bold text-nearBlack mb-8 text-center">
+          Create Listing
+        </h2>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Title
+            </label>
+            <input
+              type="text"
+              name="title"
+              placeholder="Enter listing title"
+              value={formData.title}
+              onChange={handleChange}
+              className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-waxwingGreen focus:border-transparent"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Description
+            </label>
+            <textarea
+              name="description"
+              placeholder="Describe your listing"
+              value={formData.description}
+              onChange={handleChange}
+              className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-waxwingGreen focus:border-transparent resize-none"
+              rows={4}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Price Per Hour ($)
+            </label>
+            <input
+              type="number"
+              name="price"
+              placeholder="0.00"
+              value={formData.price}
+              onChange={handleChange}
+              className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-waxwingGreen focus:border-transparent"
+              step="0.01"
+              min="0"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Location
+            </label>
+            <input
+              type="text"
+              name="location"
+              placeholder="City, State"
+              value={formData.location}
+              onChange={handleChange}
+              className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-waxwingGreen focus:border-transparent"
+            />
+          </div>
+
+          <div className="flex gap-3 mt-4">
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="flex-1 py-3 rounded-lg border-2 border-gray-300 text-gray-700 font-medium hover:bg-gray-200 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="flex-1 bg-waxwingGreen text-white py-3 rounded-lg font-medium hover:bg-waxwingLightGreen active:bg-waxwingDarkGreen transition-colors"
+            >
+              Create Listing
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function ListingsPage() {
 
   const [price, setPrice] = useState(25);
   const [showBikes, setShowBikes] = useState(true);
   const [showScooters, setShowScooters] = useState(true);
   const [rating, setRating] = useState(0);
+
+  const [createModalIsOpen, setCreateModalIsOpen] = useState(false);
 
   const listings = [
     { id: 1, imageSrc: "/bike.jpg", model: "Bike", distance: 2.5, pricePerHour: 15, seller: "JohnDoe123", rating: 4 },
@@ -185,8 +324,14 @@ export default function ListingsPage() {
     }
   };
 
-return (
-    <div className="flex h-screen bg-white">      
+  return (
+    <div className="flex h-screen bg-white">
+
+      {createModalIsOpen && (
+        <CreateListingModal
+          setIsOpen={setCreateModalIsOpen}
+        />
+      )}
       {/* Filter sidebar */}
       <LeftBar
         showBikes={showBikes}
@@ -201,11 +346,17 @@ return (
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Search bar, fixed at top */}
-        <div className="flex-shrink-0 p-6 bg-white border-b border-gray-200 flex justify-center">
-          <SearchBar 
-            onSearch={handleSearch} 
+        <div className="flex-shrink-0 p-6 bg-white border-b border-gray-200 flex justify-center gap-x-4">
+          <SearchBar
+            onSearch={handleSearch}
             placeholder="Search for listings..."
           />
+          <button
+            onClick={() => setCreateModalIsOpen(true)}
+            className="px-4 py-1 text-sm bg-waxwingGreen text-white rounded-lg hover:bg-waxwingLightGreen active:bg-waxwingDarkGreen transition-colors disabled:opacity-70"
+          >
+            Create Listing
+          </button>
         </div>
 
         {/* Listing cards area, 
@@ -236,7 +387,7 @@ return (
               )} */}
 
               {/* Temporary hardcoded listing cards for layout testing */}
-              
+
               {filtered.map((listing) => (
                 <ListingCard
                   key={listing.id}
@@ -250,7 +401,7 @@ return (
                   onBook={handleBook}
                 />
               ))}
-              
+
             </div>
           </div>
         </main>
