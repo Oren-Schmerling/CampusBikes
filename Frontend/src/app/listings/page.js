@@ -90,7 +90,7 @@ function LeftBar({
 }
 
 //Could be a compnent and modified to be reusable
-function CreateListingModal({ setIsOpen }) {
+function CreateListingModal({ setIsOpen, setListings }) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -106,9 +106,16 @@ function CreateListingModal({ setIsOpen }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Form submitted:", formData);
-    const result = await createListing(formData);
+    const payload = {
+      title: formData.title,
+      description: formData.description,
+      pricePerHour: parseFloat(formData.price),
+      location: formData.location,
+    };
+    const result = await createListing(payload);
     console.log("Create response", { result });
     setIsOpen(false);
+    fetchListings(setListings);
   };
 
   return (
@@ -226,6 +233,32 @@ function CreateListingModal({ setIsOpen }) {
   );
 }
 
+async function fetchListings(setListings) {
+  try {
+    const res = await fetch("http://localhost:8080/listing/bikes");
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    const data = await res.json();
+
+    // Map backend 'bikes' array to frontend-friendly structure
+    const mappedListings = (data.bikes || []).map(item => ({
+      id: item.id,
+      imageSrc: item.imageUrl || (item.title === "Bike" ? "/bike.jpg" : "/scooter.jpg"),
+      model: item.model || item.title,
+      distance: item.distance || 0,
+      pricePerHour: item.pricePerHour || 0,
+      seller: item.seller || "Unknown",
+      rating: item.rating || Math.floor(Math.random() * 5) + 1
+    }));
+
+    setListings(mappedListings);
+
+  } catch (err) {
+    console.error("Error fetching listings:", err);
+  }
+}
+
 export default function ListingsPage() {
 
   const [price, setPrice] = useState(25);
@@ -253,33 +286,8 @@ export default function ListingsPage() {
   const [listings, setListings] = useState([]);
 
   useEffect(() => {
-    async function fetchListings() {
-      try {
-        const res = await fetch("http://localhost:8080/listing/bikes");
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        const data = await res.json();
+    fetchListings(setListings);
 
-        // Map backend 'bikes' array to frontend-friendly structure
-        const mappedListings = (data.bikes || []).map(item => ({
-          id: item.id,
-          imageSrc: item.imageUrl || (item.title === "Bike" ? "/bike.jpg" : "/scooter.jpg"),
-          model: item.model || item.title,
-          distance: item.distance || 0,
-          pricePerHour: item.pricePerHour || 0,
-          seller: item.seller || "Unknown",
-          rating: item.rating || Math.floor(Math.random() * 5) + 1
-        }));
-
-        setListings(mappedListings);
-
-      } catch (err) {
-        console.error("Error fetching listings:", err);
-      }
-    }
-    fetchListings();
-    
   }, []);
 
   const filtered = listings.filter((item) => {
@@ -344,6 +352,7 @@ export default function ListingsPage() {
       {createModalIsOpen && (
         <CreateListingModal
           setIsOpen={setCreateModalIsOpen}
+          setListings={setListings}
         />
       )}
       {/* Filter sidebar */}
