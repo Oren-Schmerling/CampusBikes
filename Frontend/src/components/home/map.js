@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createRoot } from 'react-dom/client';
 import { MapPinned } from 'lucide-react';
+import MapPopup from './mapPopup';
 
 /* 
 Note: leaflet.js is a library for making interactive maps, 
@@ -78,14 +80,19 @@ const MapCard = ({ bikes, onBikeClick }) => {
       const marker = window.L.marker([bike.lat, bike.lng], { icon: bikeIcon }).addTo(mapInstanceRef.current);
       
       // might want to add functionality here to book a bike here?
-      marker.bindPopup(`
-        <div style="text-align: center; padding: 8px;">
-          <strong>Bike #${bike.id}</strong><br/>
-          <span style="color: ${bike.available ? '#16a34a' : '#dc2626'}">
-            ${bike.available ? 'Available' : 'In Use'}
-          </span>
-        </div>
-      `);
+      // create a div container for the marker popup
+      const popupContainer = document.createElement('div');
+
+      // Create a React root and render the marker component
+      const root = createRoot(popupContainer);
+      root.render(
+        <MapPopup
+          bike={bike} 
+        />
+      );
+
+      marker.bindPopup(popupContainer);
+
 
     //   add functionality when a bike is clicked?
     //   if (onBikeClick) {
