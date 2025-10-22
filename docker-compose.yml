@@ -40,6 +40,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql # Mount the schema file
+      - ./backend/src/main/resources/z-data.sql:/docker-entrypoint-initdb.d/z-data.sql
 
 volumes:
   postgres_data:

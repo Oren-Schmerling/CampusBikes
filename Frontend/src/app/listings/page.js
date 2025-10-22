@@ -235,46 +235,60 @@ export default function ListingsPage() {
 
   const [createModalIsOpen, setCreateModalIsOpen] = useState(false);
 
-  const listings = [
-    { id: 1, imageSrc: "/bike.jpg", model: "Bike", distance: 2.5, pricePerHour: 15, seller: "JohnDoe123", rating: 4 },
-    { id: 2, imageSrc: "/scooter.jpg", model: "Scooter", distance: 1.2, pricePerHour: 1, seller: "JaneSmith456", rating: 5 },
-    { id: 3, imageSrc: "/bike.jpg", model: "Bike", distance: 0.8, pricePerHour: 8, seller: "MikeBlue789", rating: 3 },
-    { id: 4, imageSrc: "/scooter.jpg", model: "Scooter", distance: 3.4, pricePerHour: 12, seller: "AliceGreen321", rating: 4 },
-    { id: 5, imageSrc: "/bike.jpg", model: "Bike", distance: 2.0, pricePerHour: 5, seller: "BobWhite654", rating: 2 },
-    { id: 6, imageSrc: "/scooter.jpg", model: "Scooter", distance: 4.1, pricePerHour: 20, seller: "CharlieBrown987", rating: 5 },
-    { id: 7, imageSrc: "/bike.jpg", model: "Bike", distance: 1.5, pricePerHour: 7, seller: "DianaYellow159", rating: 4 },
-    { id: 8, imageSrc: "/scooter.jpg", model: "Scooter", distance: 2.8, pricePerHour: 3, seller: "EthanPurple753", rating: 3 },
-  ];
+  // const listings = [
+  //   { id: 1, imageSrc: "/bike.jpg", model: "Bike", distance: 2.5, pricePerHour: 15, seller: "JohnDoe123", rating: 4 },
+  //   { id: 2, imageSrc: "/scooter.jpg", model: "Scooter", distance: 1.2, pricePerHour: 1, seller: "JaneSmith456", rating: 5 },
+  //   { id: 3, imageSrc: "/bike.jpg", model: "Bike", distance: 0.8, pricePerHour: 8, seller: "MikeBlue789", rating: 3 },
+  //   { id: 4, imageSrc: "/scooter.jpg", model: "Scooter", distance: 3.4, pricePerHour: 12, seller: "AliceGreen321", rating: 4 },
+  //   { id: 5, imageSrc: "/bike.jpg", model: "Bike", distance: 2.0, pricePerHour: 5, seller: "BobWhite654", rating: 2 },
+  //   { id: 6, imageSrc: "/scooter.jpg", model: "Scooter", distance: 4.1, pricePerHour: 20, seller: "CharlieBrown987", rating: 5 },
+  //   { id: 7, imageSrc: "/bike.jpg", model: "Bike", distance: 1.5, pricePerHour: 7, seller: "DianaYellow159", rating: 4 },
+  //   { id: 8, imageSrc: "/scooter.jpg", model: "Scooter", distance: 2.8, pricePerHour: 3, seller: "EthanPurple753", rating: 3 },
+  // ];
+
+  // state variables
+  const [bikes, setBikes] = useState([]);
+  const [searchQuery, setSearchQuery] = useState(""); // add this just in case we want to access search query later
+
+  const [listings, setListings] = useState([]);
+
+  useEffect(() => {
+    async function fetchListings() {
+      try {
+        const res = await fetch("http://localhost:8080/listing/bikes");
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const data = await res.json();
+
+        // Map backend 'bikes' array to frontend-friendly structure
+        const mappedListings = (data.bikes || []).map(item => ({
+          id: item.id,
+          imageSrc: item.imageUrl || (item.title === "Bike" ? "/bike.jpg" : "/scooter.jpg"),
+          model: item.model || item.title,
+          distance: item.distance || 0,
+          pricePerHour: item.pricePerHour || 0,
+          seller: item.seller || "Unknown",
+          rating: item.rating || Math.floor(Math.random() * 5) + 1
+        }));
+
+        setListings(mappedListings);
+
+      } catch (err) {
+        console.error("Error fetching listings:", err);
+      }
+    }
+    fetchListings();
+    
+  }, []);
 
   const filtered = listings.filter((item) => {
     if (item.model === "Bike" && !showBikes) return false;
     if (item.model === "Scooter" && !showScooters) return false;
     if (item.pricePerHour > price) return false;
     if (item.rating < rating) return false;
-
     return true;
   });
-
-  // state variables
-  const [bikes, setBikes] = useState([]);
-  const [searchQuery, setSearchQuery] = useState(""); // add this just in case we want to access search query later
-
-  useEffect(() => {
-    // function to fetch bikes from backend endpoint
-    async function fetchBikes() {
-      try {
-        // put proper backend bikes endpoint here
-        const res = await fetch("http://localhost:8080/listing/bikes");
-        const data = await res.json();
-        setBikes(data);
-      } catch (err) {
-        console.error("Error fetching:", err);
-      }
-    }
-
-    fetchBikes();
-  }, []);
-
 
   // function to handle search bar submissions
   const handleSearch = async (query) => {
@@ -368,25 +382,6 @@ export default function ListingsPage() {
               {/* Render listing cards here based on fetched bikes,
               need to figure out proper fields to pass in based on backend data
               */}
-              {/* {bikes.length === 0 ? (
-                <p className="text-gray-500">Loading listings...</p>
-              ) : (
-                bikes.map((bike) => (
-                  <ListingCard
-                    key={bike.id}
-                    imageSrc={bike.imageUrl}
-                    model={bike.model}
-                    distance={bike.distance}
-                    pricePerHour={bike.pricePerHour}
-                    seller={bike.seller}
-                    rating={bike.rating}
-                    onMessageSeller={handleMessageSeller}
-                    onBook={handleBook}
-                  />
-                ))
-              )} */}
-
-              {/* Temporary hardcoded listing cards for layout testing */}
 
               {filtered.map((listing) => (
                 <ListingCard
