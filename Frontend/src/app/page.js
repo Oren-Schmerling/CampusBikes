@@ -1,4 +1,6 @@
+import NavBar from "@/components/nav/navBar";
 import Link from "next/link";
+
 
 function BigText() {
   return (
