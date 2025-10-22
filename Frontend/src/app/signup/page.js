@@ -36,62 +36,31 @@ export default function SignupPage() {
     console.debug(`field change: ${name} = ${value}`);
   };
 
+  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
-    // Start timing for request
     submitStartRef.current = Date.now();
     console.debug("Submitting signup", { payload: formData });
 
-    try {
-      const result = await signup(formData);
-      const duration = Date.now() - submitStartRef.current;
-      console.log("Signup successful", { result, duration });
+    const result = await signup(formData); // no try/catch needed if signup() never throws
+    const duration = Date.now() - submitStartRef.current;
+    console.log("Signup response", { result, duration });
 
-      if (!mountedRef.current) {
-        console.warn("Component unmounted before handling success");
-        return;
-      }
+    if (!mountedRef.current) return;
+    setLoading(false);
 
+    if (result.success) {
       setMessage("Signup successful! Redirecting to login...");
-      // brief delay so user sees message
       setTimeout(() => router.push("/login"), 1500);
-    } catch (error) {
-      const duration = Date.now() - (submitStartRef.current || Date.now());
-      console.log("Signup error caught", { error, duration });
-
-      // If this is a fetch/axios-like error, try to log response details
-      try {
-        if (error && error.response) {
-          console.error("Error response details", {
-            status: error.response.status,
-            headers: error.response.headers,
-            data: error.response.data,
-          });
-          setMessage(
-            `Signup failed: ${error.response.status} - ${
-              error.response.data?.message || JSON.stringify(error.response.data)
-            }`
-          );
-        } else if (error && error.request) {
-          // request was made but no response
-          console.error("No response received for signup request", error.request);
-          setMessage("Signup failed: no response from server. Check network or server logs.");
-        } else {
-          // generic JS error
-          console.error("Unexpected signup error", error);
-          setMessage(error.message || "Signup failed. Please try again.");
-        }
-      } catch (inspectError) {
-        console.error("Error while inspecting signup error", inspectError);
-        setMessage("Signup failed and error inspection failed. Check console for details.");
-      }
-    } finally {
-      if (mountedRef.current) setLoading(false);
+    } else {
+      setMessage(result.message || "Signup failed. Please try again.");
     }
   };
+
 
   return (
     <div className="min-h-screen bg-lighterGray flex flex-col">
