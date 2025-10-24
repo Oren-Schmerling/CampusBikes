@@ -74,7 +74,6 @@ public class LoginService {
       PreparedStatement stmt = conn.prepareStatement(query)) {
             // replace username in statement w/ input username
             stmt.setString(1, username);
-
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 // extract password_hash column, check if input pass matches

@@ -28,22 +28,61 @@ const MapCard = ({ bikes, onBikeClick }) => {
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js'; // leaflet js script
     script.onload = () => {
-      // Note window.L is a leaflet library from the script
-      if (mapRef.current && window.L && !mapInstanceRef.current) {
-        // initialize map in div to UMass campus areas with coordinates
-        // 15 is the zoom level
-        const map = window.L.map(mapRef.current).setView([42.3870, -72.5289], 15);
-        
-        // add a tile layer to show map png, use openstreetmap
-        window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-          maxZoom: 22
-        }).addTo(map);
+  if (mapRef.current && window.L && !mapInstanceRef.current) {
+    // Initialize map at UMass as fallback
+    const map = window.L.map(mapRef.current).setView([42.3870, -72.5289], 15);
 
-        mapInstanceRef.current = map; // update reference to map
-        setIsMapLoaded(true);
-      }
-    };
+    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 22
+    }).addTo(map);
+
+    // ✅ Ask for the user’s current location
+    map.locate({ setView: true, maxZoom: 17, watch: false });
+
+    // ✅ When location is found
+    function onLocationFound(e) {
+      const userLatLng = e.latlng;
+
+      // Create a small green dot marker
+      const userIcon = window.L.divIcon({
+        className: 'custom-user-marker',
+        html: `<div style="
+          background-color: #22c55e; /* green */
+          width: 14px; 
+          height: 14px; 
+          border-radius: 50%;
+          border: 2px solid white;
+          box-shadow: 0 0 6px rgba(0,0,0,0.3);
+        "></div>`,
+        iconSize: [14, 14],
+        iconAnchor: [7, 7]
+      });
+
+      // Add the green marker to the map
+      window.L.marker(userLatLng, { icon: userIcon })
+        .addTo(map)
+        .bindPopup('Your current location')
+        .openPopup();
+    }
+
+    // ✅ Handle permission denied or error
+    function onLocationError(e) {
+      console.warn('Unable to retrieve location:', e.message);
+      // Keep default view on UMass
+      map.setView([42.3870, -72.5289], 15);
+    }
+
+    map.on('locationfound', onLocationFound);
+    map.on('locationerror', onLocationError);
+
+    mapInstanceRef.current = map;
+    setIsMapLoaded(true);
+  }
+};
+
+
+
     // append the map to the DOM
     document.body.appendChild(script);
 
