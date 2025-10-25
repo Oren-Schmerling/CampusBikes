@@ -36,7 +36,8 @@ const AccountItem = (text, url="/") =>{
 // function used for the logo
 const LogoItem = () =>{
   return(
-        <Link href="/" className="flex bg-waxwingGreen px-4 py-1.5 rounded-2xl items-center space-x-2 text-white hover:opacity-90 transition-opacity border-1 border-black">
+        <Link href="/" className="flex bg-waxwingGreen px-4 py-1.5 hover:bg-waxwingLightGreen hover:cursor-pointer active:bg-waxwingDarkGreen
+        rounded-2xl items-center space-x-2 text-white hover:opacity-90 transition-opacity border-1 border-black">
           <div className="text-2xl font-bold">CampusBikes</div>
           <img src="/CampusBikesLogo.svg" alt="CampusBikes" className="h-12" />      
         </Link>
@@ -81,17 +82,17 @@ const navbar_with_color = (color) => {
 
         {/* Center - Main Navigation Links */}
         <div className="flex items-center space-x-40">
-          <Link href="/home" className="flex bg-waxwingGreen items-center space-x-2 text-white hover:bg-green-900 px-4 py-2 rounded-2xl transition-colors border-1 border-black">
+          <Link href="/home" className="flex bg-waxwingGreen items-center space-x-2 text-white hover:bg-waxwingLightGreen hover:cursor-pointer active:bg-waxwingDarkGreen px-4 py-2 rounded-2xl transition-colors border-1 border-black">
             <Home className="w-5 h-5" />
             <span className="font-medium">Home</span>
           </Link>
           
-          <Link href="/posting" className="flex bg-waxwingGreen items-center space-x-2 text-white hover:bg-green-900 px-4 py-2 rounded-2xl transition-colors border-1 border-black">
+          <Link href="/posting" className="flex bg-waxwingGreen items-center space-x-2 text-white hover:bg-waxwingLightGreen hover:cursor-pointer active:bg-waxwingDarkGreen px-4 py-2 rounded-2xl transition-colors border-1 border-black">
             <FileText className="w-5 h-5" />
             <span className="font-medium">Posting</span>
           </Link>
           
-          <Link href="/listings" className="flex bg-waxwingGreen items-center space-x-2 text-white hover:bg-green-900 px-4 py-2 rounded-2xl transition-colors border-1 border-black">
+          <Link href="/listings" className="flex bg-waxwingGreen items-center space-x-2 text-white hover:bg-waxwingLightGreen hover:cursor-pointer active:bg-waxwingDarkGreen px-4 py-2 rounded-2xl transition-colors border-1 border-black">
             <List className="w-5 h-5" />
             <span className="font-medium">Listing</span>
           </Link>
