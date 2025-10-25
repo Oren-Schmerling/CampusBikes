@@ -34,7 +34,6 @@ public class ListingsController {
       @RequestBody BikeCreateRequest request,
       @RequestHeader("Authorization") String authHeader) {
 
-    System.out.println("in the func");
     Map<String, Object> response = new HashMap<>();
 
     String token = authHeader.substring(7).trim();
