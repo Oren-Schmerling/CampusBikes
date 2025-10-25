@@ -23,7 +23,7 @@ NEXT_PUBLIC_APP_ENV
 JWT_SECRET
 ```
 
-After starting up the volumes on docker, you should be able to see "Hello World!" printed on your screen at http://localhost:8080/hello
+After starting up the containers on docker, you should be able to see the CampusBikes landing page at http://localhost:3000/
 
 You can look at the PostgreSQL database by logging into it. It's on port `5432` and you can connect to it with the following command: `psql -h localhost -p 5432 -U postgres_user -d bikedb`. You'll be prompted to enter the password which is visible in your .env file.
 
