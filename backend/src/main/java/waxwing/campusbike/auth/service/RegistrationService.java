@@ -1,36 +1,19 @@
 package waxwing.campusbike.auth.service;
 
-import waxwing.campusbike.Env;
 import waxwing.campusbike.auth.util.PasswordUtil;
 import waxwing.campusbike.auth.util.VerificationUtil;
 import waxwing.campusbike.auth.EmailValidity;
 import waxwing.campusbike.types.User;
 import waxwing.campusbike.types.dto.RegistrationRequest;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import io.github.cdimascio.dotenv.Dotenv;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Map;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.google.i18n.phonenumbers.NumberParseException;
@@ -40,18 +23,8 @@ import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 @Service
 public class RegistrationService {
 
-  private final Env env;
-  private final ObjectMapper objectMapper;
-
-
   @Autowired
   private DataSource dataSource;
-
-  @Autowired
-  public RegistrationService(Env env) {
-    this.env = env;
-    this.objectMapper = new ObjectMapper();
-  }
 
   /**
    * Checks if the password is valid.
@@ -110,7 +83,7 @@ public class RegistrationService {
     }
 
     int code = uploadUser(newUser);
-    if (code == 1){
+    if (code == 1) {
       return 201; // Created
     } else {
       return 500; // Internal Server Error
@@ -122,25 +95,25 @@ public class RegistrationService {
    * database.
    * Returns true if such a user exists, false otherwise.
    */
-  //This could probably be improved to show if either username or email exists
-  //Instead of both but good for now
+  // This could probably be improved to show if either username or email exists
+  // Instead of both but good for now
   private boolean userExists(String username, String email) {
     String checkSql = "SELECT COUNT(*) FROM users WHERE username = ? OR email = ?";
 
     try (Connection conn = dataSource.getConnection();
-      PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
-            checkStmt.setString(1, username);
-            checkStmt.setString(2, email);
+        PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+      checkStmt.setString(1, username);
+      checkStmt.setString(2, email);
 
-            ResultSet rs = checkStmt.executeQuery();
-            if (rs.next() && rs.getInt(1) > 0) {
-                return true;
-            }else {
-                return false; 
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return true;
+      ResultSet rs = checkStmt.executeQuery();
+      if (rs.next() && rs.getInt(1) > 0) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
+      return true;
     }
   }
 
@@ -152,18 +125,18 @@ public class RegistrationService {
     String sql = "INSERT INTO users (username, email, password_hash, phone) VALUES (?, ?, ?, ?)";
 
     try (Connection conn = dataSource.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql)) {
-        
-        stmt.setString(1, user.getUsername());
-        stmt.setString(2, user.getEmail());
-        stmt.setString(3, user.getPassword_hash());
-        stmt.setString(4, user.getPhone());
-        
-        int rowsAffected = stmt.executeUpdate();
-        return rowsAffected; // usually 1 if success
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+      stmt.setString(1, user.getUsername());
+      stmt.setString(2, user.getEmail());
+      stmt.setString(3, user.getPassword_hash());
+      stmt.setString(4, user.getPhone());
+
+      int rowsAffected = stmt.executeUpdate();
+      return rowsAffected; // usually 1 if success
     } catch (SQLException e) {
-        e.printStackTrace();
-        return -1; // indicate failure
+      e.printStackTrace();
+      return -1; // indicate failure
     }
   }
 }

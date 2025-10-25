@@ -1,4 +1,4 @@
-package waxwing.campusbike.auth.service;
+package waxwing.campusbike.listing.service;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -43,6 +43,8 @@ public class ListingService {
         request.getDescription(),
         request.getLocation(),
         request.getPricePerHour(),
+        request.getLatitude(),
+        request.getLongitude(),
         request.getStatus());
 
     int code = uploadBike(newBike);
@@ -57,17 +59,19 @@ public class ListingService {
    * Returns the HTTP status code from the POST request.
    */
   private int uploadBike(Bike bike) {
-    String sql = "INSERT INTO bikes (owner_id, title, description, location, price_per_hour, status) VALUES (?, ?, ?, ?, ?, ?)";
+    String sql = "INSERT INTO bikes (owner_id, title, description, location, price_per_hour, latitude, longitude, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
     try (Connection conn = dataSource.getConnection();
          PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-        stmt.setLong(1, bike.getOwnerId()); // foreign key to users.id
+        stmt.setLong(1, bike.getOwnerId());
         stmt.setString(2, bike.getTitle());
         stmt.setString(3, bike.getDescription());
         stmt.setString(4, bike.getLocation());
         stmt.setBigDecimal(5, bike.getPricePerHour());
-        stmt.setString(6, bike.getStatus());
+        stmt.setDouble(6, bike.getLatitude());
+        stmt.setDouble(7, bike.getLongitude());
+        stmt.setString(8, bike.getStatus());
 
         int rowsAffected = stmt.executeUpdate();
 
@@ -120,6 +124,8 @@ public class ListingService {
                 rs.getString("description"),
                 rs.getString("location"),
                 rs.getBigDecimal("price_per_hour"),
+                rs.getDouble("latitude"),
+                rs.getDouble("longitude"),
                 rs.getString("status")
             );
             bike.setId(rs.getLong("id"));

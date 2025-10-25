@@ -28,3 +28,6 @@ replay_pid*
 
 # other #
 .env
+
+# for macOS 
+.DS_Store
