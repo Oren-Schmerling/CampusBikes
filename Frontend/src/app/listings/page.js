@@ -5,6 +5,8 @@ import SearchBar from "@/components/listings/searchBar";
 import { useEffect, useState } from "react";
 import { LucideIcon, Star } from "lucide-react";
 import { createListing } from "@/api/createListing";
+import MapCard from '@/components/home/map';
+
 
 // this may eventually be complex enough to be pulled into its own component file
 function LeftBar({
@@ -211,6 +213,11 @@ function CreateListingModal({ setIsOpen, setListings }) {
               className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-waxwingGreen focus:border-transparent"
             />
           </div>
+          <div>
+            <MapCard bikes={[]} onBikeClick={() => console.log()} />
+          </div>
+
+
 
           <div className="flex gap-3 mt-4">
             <button
@@ -289,8 +296,8 @@ export default function ListingsPage() {
     fetchListings(setListings);
 
   }, []);
-
   const filtered = listings.filter((item) => {
+    console.log("Filtering item:", item);
     if (item.model === "Bike" && !showBikes) return false;
     if (item.model === "Scooter" && !showScooters) return false;
     if (item.pricePerHour > price) return false;
