@@ -1,14 +1,16 @@
 services:
   frontend:
-    build: ./Frontend
-    container_name: campusbike-frontend
+    image: local/campusbike_frontend
+    container_name: campusbike_frontend
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8080
-      - NEXT_PUBLIC_APP_ENV=dev
+    env_file: ".env"
     volumes:
       - ./Frontend:/app
+      - /app/node_modules
       - /app/node_modules
     depends_on:
       - springboot
@@ -38,6 +40,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql # Mount the schema file
+      - ./backend/src/main/resources/z-data.sql:/docker-entrypoint-initdb.d/z-data.sql
 
 volumes:
   postgres_data:

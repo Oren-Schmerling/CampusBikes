@@ -14,14 +14,19 @@ public class Bike {
     private BigDecimal pricePerHour;
     private String status;
     private LocalDateTime createdAt;
+    private double latitude;
+    private double longitude;
 
-    public Bike(Long ownerId, String title, String description, String location, BigDecimal pricePerHour, String status) {
+
+    public Bike(Long ownerId, String title, String description, String location, BigDecimal pricePerHour, double latitude, double longitude, String status) {
         this.ownerId = ownerId;
         this.title = title;
         this.description = description;
         this.location = location;
         this.pricePerHour = pricePerHour;
         this.status = status;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -87,5 +92,21 @@ public class Bike {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 }

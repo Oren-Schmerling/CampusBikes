@@ -1,16 +1,21 @@
 package waxwing.campusbike.auth.service;
 
-import waxwing.campusbike.types.dto.LoginRequest;
-import waxwing.campusbike.Env;
-import waxwing.campusbike.auth.util.JwtUtil;
-import waxwing.campusbike.auth.util.PasswordUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-import java.sql.*;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import waxwing.campusbike.Env;
+import waxwing.campusbike.auth.util.JwtUtil;
+import waxwing.campusbike.auth.util.PasswordUtil;
+import waxwing.campusbike.types.dto.LoginRequest;
 
 @Service
 public class LoginService {
