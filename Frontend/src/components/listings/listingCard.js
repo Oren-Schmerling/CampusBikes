@@ -1,5 +1,18 @@
 import Image from "next/image";
 
+/* 
+Some TODO stuff:
+
+1. Integrate w/ listing backend
+2. when the browser is compressed or stretched the cards can be weird and overlap, probably want to fix formatting
+3. margins between edges of page and between cards is inconsistent 
+(more space on left and right margins than between cards)
+4. add default image?
+5. Finalize color schemes in the card 
+6. card size is smaller than the figma page (not sure if this is a big deal though)
+
+*/
+
 /*
 Package for icons used in the listing card component
 currently using MapPin and User icons from lucide-react
@@ -20,8 +33,10 @@ const ListingCard = ({
   onBook,
 }) => {
   return (
-    <div className="w-75 bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200 
-    transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105 hover:-translate-y-1 cursor-pointer">
+    <div
+      className="w-75 bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200 
+    transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105 hover:-translate-y-1 cursor-pointer"
+    >
       {/* Image area, temporary placeholder, need to format correctly for what backend returns */}
       <div className="relative w-full h-40 bg-gray-100">
         <Image
@@ -44,18 +59,20 @@ const ListingCard = ({
             <MapPin size={14} />
             <span>{distance} miles away</span>
           </div>
-          
+
           {/* Put price here */}
           <div className="text-green-600 font-semibold">
             {Array.from({ length: 3 }).map((_, j) => (
               <span
                 key={j}
                 className={`text-lg leading-none ${
-                  // may want to adjust the thresholds here, 
+                  // may want to adjust the thresholds here,
                   // currently cheapest is (0-5], mid (5-10], expensive >= 10
-                  pricePerHour > 5*j ? "text-green-500" : "text-gray-300"
+                  pricePerHour > 5 * j ? "text-green-500" : "text-gray-300"
                 }`}
-              >$</span>
+              >
+                $
+              </span>
             ))}
             <span className="text-gray-700 ml-1">{pricePerHour} / hour</span>
           </div>
@@ -76,24 +93,26 @@ const ListingCard = ({
                 className={`text-lg leading-none ${
                   j < rating ? "text-green-500" : "text-gray-300"
                 }`}
-              >★</span>
+              >
+                ★
+              </span>
             ))}
           </div>
         </div>
 
         {/* Message and Book buttons, add functionality to them later */}
         <div className="flex justify-between">
-          <button 
+          <button
             // call onMessageSeller function when clicked, put proper parameters later when function is defined
             onClick={() => onMessageSeller?.()}
-            className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300 transition"
+            className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300 transition cursor-pointer"
           >
             Message Seller
           </button>
           <button
             // call onBook function when clicked, put proper parameters later when function is defined
             onClick={() => onBook?.()}
-            className="px-4 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition"
+            className="px-4 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition cursor-pointer"
           >
             Book
           </button>
@@ -101,7 +120,6 @@ const ListingCard = ({
       </div>
     </div>
   );
-}
-
+};
 
 export default ListingCard;
