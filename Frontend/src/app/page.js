@@ -102,8 +102,7 @@ function BikeImage() {
 function HeroSection() {
   return (
     <section className="relative h-180">
-      <NavBar />
-      <div className="flex flex-col w-1/2 bg-lighterGray rounded-br-[25%] pl-[100px] pt-[50px] pb-[100px] gap-8 relative z-50">
+      <div className="flex flex-col w-1/2 bg-lighterGray rounded-br-[25%] pl-[100px] py-24 gap-8 relative z-50">
         <BigText />
         <LittleText />
         <JoinButton />
@@ -142,6 +141,7 @@ function FeaturesSection() {
 export default function Home() {
   return (
     <div className="relative min-h-screen">
+      <NavBar />
       <HeroSection />
       <FeaturesSection />
     </div>
