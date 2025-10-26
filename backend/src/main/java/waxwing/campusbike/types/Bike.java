@@ -31,7 +31,7 @@ public class Bike {
   }
 
   public Long getId() {
-    return id;
+    return this.id;
   }
 
   public void setId(Long id) {
@@ -39,7 +39,7 @@ public class Bike {
   }
 
   public Long getOwnerId() {
-    return ownerId;
+    return this.ownerId;
   }
 
   public void setOwnerId(Long ownerId) {
@@ -47,7 +47,7 @@ public class Bike {
   }
 
   public String getTitle() {
-    return title;
+    return this.title;
   }
 
   public void setTitle(String title) {
@@ -55,7 +55,7 @@ public class Bike {
   }
 
   public String getDescription() {
-    return description;
+    return this.description;
   }
 
   public void setDescription(String description) {
@@ -63,7 +63,7 @@ public class Bike {
   }
 
   public String getLocation() {
-    return location;
+    return this.location;
   }
 
   public void setLocation(String location) {
@@ -71,7 +71,7 @@ public class Bike {
   }
 
   public BigDecimal getPricePerHour() {
-    return pricePerHour;
+    return this.pricePerHour;
   }
 
   public void setPricePerHour(BigDecimal pricePerHour) {
@@ -79,7 +79,7 @@ public class Bike {
   }
 
   public String getStatus() {
-    return status;
+    return this.status;
   }
 
   public void setStatus(String status) {
@@ -87,15 +87,15 @@ public class Bike {
   }
 
   public LocalDateTime getCreatedAt() {
-    return createdAt;
+    return this.createdAt;
   }
 
   public void setCreatedAt(LocalDateTime createdAt) {
     this.createdAt = createdAt;
-  }<<<<<<<HEAD=======
+  }
 
   public double getLatitude() {
-    return latitude;
+    return this.latitude;
   }
 
   public void setLatitude(double latitude) {
@@ -103,10 +103,10 @@ public class Bike {
   }
 
   public double getLongitude() {
-    return longitude;
+    return this.longitude;
   }
 
   public void setLongitude(double longitude) {
-        this.longitude = longitude;
-    }>>>>>>>main
+    this.longitude = longitude;
+  }
 }
