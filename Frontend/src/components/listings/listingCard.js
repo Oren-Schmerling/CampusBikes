@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { useState } from "react";
 
 /* 
 Some TODO stuff:
@@ -32,6 +33,7 @@ const ListingCard = ({
   onMessageSeller, // functions to message seller and book a bike
   onBook,
 }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <div
       className="w-75 bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200 
@@ -68,7 +70,7 @@ const ListingCard = ({
                 className={`text-lg leading-none ${
                   // may want to adjust the thresholds here,
                   // currently cheapest is (0-5], mid (5-10], expensive >= 10
-                  pricePerHour > 5 * j ? "text-green-500" : "text-gray-300"
+                  pricePerHour > 5 * j ? "text-waxwingLightGreen" : "text-gray-300"
                 }`}
               >
                 $
@@ -91,7 +93,7 @@ const ListingCard = ({
               <span
                 key={j}
                 className={`text-lg leading-none ${
-                  j < rating ? "text-green-500" : "text-gray-300"
+                  j < rating ? "text-waxwingLightGreen" : "text-gray-300"
                 }`}
               >
                 ★
@@ -112,7 +114,7 @@ const ListingCard = ({
           <button
             // call onBook function when clicked, put proper parameters later when function is defined
             onClick={() => onBook?.()}
-            className="px-4 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition cursor-pointer"
+            className="px-4 py-1 text-sm bg-waxwingGreen text-white rounded-md hover:bg-waxwingDarkGreen transition cursor-pointer"
           >
             Book
           </button>

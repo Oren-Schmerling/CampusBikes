@@ -73,7 +73,6 @@ const NavBar = () => {
   }
   return (
     <div className="fixed w-full bg-waxwingGreen z-50 flex items-center px-6 h-16">
-      {/* First item: logo + site name */}
         <div className="flex items-center">
           <span className="text-3xl font-bold text-white">
             CampusBikes
@@ -81,14 +80,12 @@ const NavBar = () => {
           <img
             src="/logo.svg"
             alt="Site Logo"
-            className="h-13 w-auto" // taller logo
+            className="h-13 w-auto"
           />
 
         </div>
-
-      {/* Other nav items */}
       <div className="flex w-full justify-between ml-20">
-        {AltNavItem("accountCircle.svg", "Home Page", "/home")}
+        {AltNavItem("homeIcon.svg", "Home Page", "/home")}
         {AltNavItem("plusCircle.svg", "Listings", "/listings")}
         {AltNavItem("accountCircle.svg", "Account", "/contact")}
       </div>
