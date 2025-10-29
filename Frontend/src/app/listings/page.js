@@ -18,6 +18,8 @@ function LeftBar({
   setPrice,
   rating,
   setRating,
+  distance,
+  setDistance
 }) {
   const handleBikeChange = () => {
     setShowBikes(!showBikes);
@@ -28,13 +30,16 @@ function LeftBar({
   const handleStars = (value) => {
     setRating(value);
   };
+  const handleDistance = (value) => {
+    setDistance(value);
+  };
 
   return (
     <div className="w-64 h-full bg-lighterGray">
       <div className="w-full h-6 text-center justify-center text-xl py-2 pb-32">
         Filters
       </div>
-      <div className="space-y-4 pb-32">
+      <div className="space-y-2 pb-8">
         <div className="w-full h-6 text-center justify-center text-lg">
           Type
         </div>
@@ -58,7 +63,7 @@ function LeftBar({
         </label>
       </div>
 
-      <div className="space-y-4 pb-32 w-full">
+      <div className="space-y-2 pb-8 w-full">
         <div className="text-center text-lg font-medium">Hourly Price</div>
         <div className="flex flex-col items-center w-full space-y-2">
           <input
@@ -71,6 +76,23 @@ function LeftBar({
           />
           <div className="flex justify-mid text-sm font-semibold text-gray-700">
             <span>${price}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-2 pb-8 w-full">
+        <div className="text-center text-lg font-medium">Distance</div>
+        <div className="flex flex-col items-center w-full space-y-2">
+          <input
+            type="range"
+            min="0"
+            max="5"
+            value={distance}
+            onChange={(e) => setDistance(Number(e.target.value))}
+            className="w-3/4 h-2 accent-[var(--color-waxwingGreen)] rounded-lg"
+          />
+          <div className="flex justify-center text-sm font-semibold text-gray-700">
+            <span>{distance} Miles</span>
           </div>
         </div>
       </div>
@@ -282,7 +304,9 @@ async function fetchListings(setListings) {
       imageSrc:
         item.imageUrl || (item.title === "Bike" ? "/bike.jpg" : "/scooter.jpg"),
       model: item.model || item.title,
-      distance: item.distance || 0,
+      latitude: item.latitude,
+      longitude: item.longitude,
+      distance: NaN,
       pricePerHour: item.pricePerHour || 0,
       seller: item.seller || "Unknown",
       rating: item.rating || Math.floor(Math.random() * 5) + 1,
@@ -294,24 +318,31 @@ async function fetchListings(setListings) {
   }
 }
 
+function haversineDistanceMiles(lat1, lon1, lat2, lon2) {
+  const R = 3958.8; // Earth radius in miles
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) *
+      Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) ** 2;
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // distance in miles
+}
+
 export default function ListingsPage() {
   const [price, setPrice] = useState(25);
   const [showBikes, setShowBikes] = useState(true);
   const [showScooters, setShowScooters] = useState(true);
   const [rating, setRating] = useState(0);
+  const [maxDistance, setMaxDistance] = useState(5);
 
   const [createModalIsOpen, setCreateModalIsOpen] = useState(false);
 
-  // const listings = [
-  //   { id: 1, imageSrc: "/bike.jpg", model: "Bike", distance: 2.5, pricePerHour: 15, seller: "JohnDoe123", rating: 4 },
-  //   { id: 2, imageSrc: "/scooter.jpg", model: "Scooter", distance: 1.2, pricePerHour: 1, seller: "JaneSmith456", rating: 5 },
-  //   { id: 3, imageSrc: "/bike.jpg", model: "Bike", distance: 0.8, pricePerHour: 8, seller: "MikeBlue789", rating: 3 },
-  //   { id: 4, imageSrc: "/scooter.jpg", model: "Scooter", distance: 3.4, pricePerHour: 12, seller: "AliceGreen321", rating: 4 },
-  //   { id: 5, imageSrc: "/bike.jpg", model: "Bike", distance: 2.0, pricePerHour: 5, seller: "BobWhite654", rating: 2 },
-  //   { id: 6, imageSrc: "/scooter.jpg", model: "Scooter", distance: 4.1, pricePerHour: 20, seller: "CharlieBrown987", rating: 5 },
-  //   { id: 7, imageSrc: "/bike.jpg", model: "Bike", distance: 1.5, pricePerHour: 7, seller: "DianaYellow159", rating: 4 },
-  //   { id: 8, imageSrc: "/scooter.jpg", model: "Scooter", distance: 2.8, pricePerHour: 3, seller: "EthanPurple753", rating: 3 },
-  // ];
+  const [userLocation, setUserLocation] = useState(null);
 
   // state variables
   const [bikes, setBikes] = useState([]);
@@ -321,12 +352,44 @@ export default function ListingsPage() {
 
   useEffect(() => {
     fetchListings(setListings);
+    const saved = localStorage.getItem("userLocation");
+    if (saved) {
+      setUserLocation(JSON.parse(saved));
+    } else {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const loc = { lat: latitude, lng: longitude };
+          localStorage.setItem("userLocation", JSON.stringify(loc));
+          setUserLocation(loc);
+        },
+        (err) => {
+          console.warn("Geolocation error:", err);
+          alert("We need your location to filter by distance.");
+        }
+      );
+    }
   }, []);
-  const filtered = listings.filter((item) => {
+
+const filtered = listings
+  .map(item => {
+    if (!userLocation) return { ...item, distance: null };
+    return {
+      ...item,
+      distance: haversineDistanceMiles(
+        userLocation.lat,
+        userLocation.lng,
+        item.latitude,
+        item.longitude
+      ),
+    };
+  })
+  .filter(item => {
     if (item.model === "Bike" && !showBikes) return false;
     if (item.model === "Scooter" && !showScooters) return false;
     if (item.pricePerHour > price) return false;
     if (item.rating < rating) return false;
+    if (userLocation && item.distance != null && item.distance > maxDistance) return false;
     return true;
   });
 
@@ -398,6 +461,8 @@ export default function ListingsPage() {
         setPrice={setPrice}
         rating={rating}
         setRating={setRating}
+        distance={maxDistance}
+        setDistance={setMaxDistance}
       />
 
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -429,7 +494,7 @@ export default function ListingsPage() {
                   key={listing.id}
                   imageSrc={listing.imageSrc}
                   model={listing.model}
-                  distance={listing.distance}
+                  distance={listing.distance ? listing.distance.toFixed(2) : null}
                   pricePerHour={listing.pricePerHour}
                   seller={listing.seller}
                   rating={listing.rating}
