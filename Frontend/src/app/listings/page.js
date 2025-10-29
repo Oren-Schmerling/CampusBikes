@@ -30,41 +30,38 @@ function LeftBar({
   const handleStars = (value) => {
     setRating(value);
   };
-  const handleDistance = (value) => {
-    setDistance(value);
-  };
 
   return (
-    <div className="w-64 h-full bg-lighterGray">
-      <div className="w-full h-6 text-center justify-center text-xl py-2 pb-32">
+    <div className="w-64 h-full bg-[#8ac487]">
+      <div className="w-full h-6 text-center py-2 pb-24 text-3xl font-bold text-waxwingDarkGreen">
         Filters
       </div>
       <div className="space-y-2 pb-8">
-        <div className="w-full h-6 text-center justify-center text-lg">
-          Type
+        <div className="w-full h-6 text-center justify-center text-lg font-bold">
+          Ride Type
         </div>
-        <label className="flex items-center justify-start space-x-4 w-full pl-4">
+        <label className="flex items-center justify-start space-x-6 w-full pl-6">
           <input
             type="checkbox"
             checked={showBikes}
             onChange={handleBikeChange}
             className="accent-[var(--color-waxwingGreen)] w-6 h-6"
           />
-          <span className="text-lg flex-1 text-center">Bikes</span>
+          <span className="text-lg flex-1 text-left">Bikes</span>
         </label>
-        <label className="flex items-center justify-start space-x-4 w-full pl-4">
+        <label className="flex items-center justify-start space-x-6 w-full pl-6">
           <input
             type="checkbox"
             checked={showScooters}
             onChange={handleScooterChange}
             className="accent-[var(--color-waxwingGreen)] w-6 h-6"
           />
-          <span className="text-lg flex-1 text-center">Scooters</span>
+          <span className="text-lg flex-1 text-left">Scooters</span>
         </label>
       </div>
 
       <div className="space-y-2 pb-8 w-full">
-        <div className="text-center text-lg font-medium">Hourly Price</div>
+        <div className="w-full h-6 text-center justify-center text-lg font-bold">Hourly Price</div>
         <div className="flex flex-col items-center w-full space-y-2">
           <input
             type="range"
@@ -81,12 +78,13 @@ function LeftBar({
       </div>
 
       <div className="space-y-2 pb-8 w-full">
-        <div className="text-center text-lg font-medium">Distance</div>
+        <div className="w-full h-6 text-center justify-center text-lg font-bold">Distance</div>
         <div className="flex flex-col items-center w-full space-y-2">
           <input
             type="range"
             min="0"
             max="5"
+            step="0.1"
             value={distance}
             onChange={(e) => setDistance(Number(e.target.value))}
             className="w-3/4 h-2 accent-[var(--color-waxwingGreen)] rounded-lg"
@@ -98,22 +96,24 @@ function LeftBar({
       </div>
 
       <div className="space-y-2 w-full flex flex-col items-center">
+      <div className="w-full h-6 text-center justify-center text-lg font-bold">Rating</div>
         <div className="flex space-x-1">
           {[1, 2, 3, 4, 5].map((star) => (
-            <Star
-              key={star}
-              fill={rating >= star ? "var(--color-waxwingGreen)" : "none"}
-              stroke="currentColor"
-              className={`w-8 h-8 cursor-pointer ${
-                rating >= star
-                  ? "text-[var(--color-waxwingGreen)]"
-                  : "text-gray-300"
-              }`}
-              onClick={() => handleStars(star)}
-            />
+          <Star
+            key={star}
+            fill={rating >= star ? "var(--color-waxwingGreen)" : "#f2f2f2"}
+            strokeWidth={1}
+            // stroke="var(--color-waxwingGreen)"
+            className={`w-8 h-8 cursor-pointer ${
+              rating >= star
+                ? "text-[var(--color-waxwingGreen)]"
+                : "text-gray-300"
+            }`}
+            onClick={() => handleStars(star)}
+          />
           ))}
         </div>
-        <span className="text-center text-lg">
+        <span className="flex justify-center text-sm font-semibold text-gray-700">
           {rating > 0
             ? `${rating} star${rating > 1 ? "s" : ""}+`
             : "Any rating"}
