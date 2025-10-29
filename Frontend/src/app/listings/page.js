@@ -307,6 +307,9 @@ async function fetchListings(setListings) {
       latitude: item.latitude,
       longitude: item.longitude,
       distance: NaN,
+      description: item.description,
+      location: item.location,
+      title: item.title,
       pricePerHour: item.pricePerHour || 0,
       seller: item.seller || "Unknown",
       rating: item.rating || Math.floor(Math.random() * 5) + 1,
@@ -341,7 +344,7 @@ export default function ListingsPage() {
   const [maxDistance, setMaxDistance] = useState(5);
 
   const [createModalIsOpen, setCreateModalIsOpen] = useState(false);
-
+  const [selectedListing, setSelectedListing] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
 
   // state variables
@@ -500,9 +503,37 @@ const filtered = listings
                   rating={listing.rating}
                   onMessageSeller={handleMessageSeller}
                   onBook={handleBook}
+                  onClick={() => setSelectedListing(listing)}
                 />
               ))}
             </div>
+            {selectedListing && (
+              <div
+                onClick={() => setSelectedListing(null)} // click background to close
+                className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+              >
+                <div
+                  onClick={(e) => e.stopPropagation()} // prevent closing modal when clicking inside
+                  className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-lg"
+                >
+                  <h2 className="text-2xl font-bold mb-4">{selectedListing.model}</h2>
+                  <p>
+                    Title: {selectedListing.title} <br />
+                    Description: {selectedListing.description} <br />
+                    Location: {selectedListing.location} <br />
+                    Price: ${selectedListing.pricePerHour}/hour <br />
+                    Distance: {selectedListing.distance} miles <br />
+                    Seller: {selectedListing.seller}
+                  </p>
+                  <button
+                    onClick={() => setSelectedListing(null)}
+                    className="mt-4 px-4 py-2 bg-waxwingGreen text-white rounded-md hover:bg-waxwingDarkGreen"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </main>
       </div>

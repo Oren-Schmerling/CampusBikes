@@ -32,12 +32,15 @@ const ListingCard = ({
   rating,
   onMessageSeller, // functions to message seller and book a bike
   onBook,
+  onClick,
+  description,
+  location,
 }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <div
+      onClick={onClick} // handle card click
       className="w-75 bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200 
-    transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105 hover:-translate-y-1 cursor-pointer"
+      transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105 hover:-translate-y-1 cursor-pointer"
     >
       {/* Image area, temporary placeholder, need to format correctly for what backend returns */}
       <div className="relative w-full h-40 bg-gray-100">
@@ -106,14 +109,14 @@ const ListingCard = ({
         <div className="flex justify-between">
           <button
             // call onMessageSeller function when clicked, put proper parameters later when function is defined
-            onClick={() => onMessageSeller?.()}
+            onClick={(e) => { e.stopPropagation(); onMessageSeller?.()}}
             className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300 transition cursor-pointer"
           >
             Message Seller
           </button>
           <button
             // call onBook function when clicked, put proper parameters later when function is defined
-            onClick={() => onBook?.()}
+            onClick={(e) => { e.stopPropagation(); onBook?.(); }}
             className="px-4 py-1 text-sm bg-waxwingGreen text-white rounded-md hover:bg-waxwingDarkGreen transition cursor-pointer"
           >
             Book
