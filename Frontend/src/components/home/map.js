@@ -28,58 +28,68 @@ const MapCard = ({ bikes, onBikeClick }) => {
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js'; // leaflet js script
     script.onload = () => {
-  if (mapRef.current && window.L && !mapInstanceRef.current) {
-    // Initialize map at UMass as fallback
-    const map = window.L.map(mapRef.current).setView([42.3870, -72.5289], 15);
+      if (mapRef.current && window.L && !mapInstanceRef.current) {
+        // Initialize map at UMass as fallback
+        const map = window.L.map(mapRef.current).setView([42.3870, -72.5289], 15);
 
-    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 22
-    }).addTo(map);
+        window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          maxZoom: 22
+        }).addTo(map);
 
-    // ✅ Ask for the user’s current location
-    map.locate({ setView: true, maxZoom: 17, watch: false });
+        // Load Leaflet Routing Machine (after Leaflet)
+        const routingScript = document.createElement('script');
+        routingScript.src = 'https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js';
+        document.body.appendChild(routingScript);
 
-    // ✅ When location is found
-    function onLocationFound(e) {
-      const userLatLng = e.latlng;
+        const routingCSS = document.createElement('link');
+        routingCSS.rel = 'stylesheet';
+        routingCSS.href = 'https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css';
+        document.head.appendChild(routingCSS);
 
-      // Create a small green dot marker
-      const userIcon = window.L.divIcon({
-        className: 'custom-user-marker',
-        html: `<div style="
-          background-color: #22c55e; /* green */
-          width: 14px; 
-          height: 14px; 
-          border-radius: 50%;
-          border: 2px solid white;
-          box-shadow: 0 0 6px rgba(0,0,0,0.3);
-        "></div>`,
-        iconSize: [14, 14],
-        iconAnchor: [7, 7]
-      });
+        // ✅ Ask for the user’s current location
+        map.locate({ setView: true, maxZoom: 17, watch: false });
 
-      // Add the green marker to the map
-      window.L.marker(userLatLng, { icon: userIcon })
-        .addTo(map)
-        .bindPopup('Your current location')
-        .openPopup();
-    }
+        // ✅ When location is found
+        function onLocationFound(e) {
+          const userLatLng = e.latlng;
 
-    // ✅ Handle permission denied or error
-    function onLocationError(e) {
-      console.warn('Unable to retrieve location:', e.message);
-      // Keep default view on UMass
-      map.setView([42.3870, -72.5289], 15);
-    }
+          // Create a small green dot marker
+          const userIcon = window.L.divIcon({
+            className: 'custom-user-marker',
+            html: `<div style="
+              background-color: #22c55e; /* green */
+              width: 14px; 
+              height: 14px; 
+              border-radius: 50%;
+              border: 2px solid white;
+              box-shadow: 0 0 6px rgba(0,0,0,0.3);
+            "></div>`,
+            iconSize: [14, 14],
+            iconAnchor: [7, 7]
+          });
 
-    map.on('locationfound', onLocationFound);
-    map.on('locationerror', onLocationError);
+          // Add the green marker to the map
+          window.L.marker(userLatLng, { icon: userIcon })
+            .addTo(map)
+            .bindPopup('Your current location')
+            .openPopup();
+        }
 
-    mapInstanceRef.current = map;
-    setIsMapLoaded(true);
-  }
-};
+        // ✅ Handle permission denied or error
+        function onLocationError(e) {
+          console.warn('Unable to retrieve location:', e.message);
+          // Keep default view on UMass
+          map.setView([42.3870, -72.5289], 15);
+        }
+
+        map.on('locationfound', onLocationFound);
+        map.on('locationerror', onLocationError);
+
+        mapInstanceRef.current = map;
+        setIsMapLoaded(true);
+      }
+      };
 
 
 
