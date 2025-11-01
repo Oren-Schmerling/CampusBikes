@@ -3,11 +3,10 @@
 import ListingCard from "@/components/listings/listingCard";
 import SearchBar from "@/components/listings/searchBar";
 import { useEffect, useState } from "react";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import { LucideIcon, Star } from "lucide-react";
 import { createListing } from "@/api/createListing";
-import MapDropLocation from '@/components/listings/mapDropLocation';
-
+import MapDropLocation from "@/components/listings/mapDropLocation";
 
 // this may eventually be complex enough to be pulled into its own component file
 function LeftBar({
@@ -18,44 +17,51 @@ function LeftBar({
   price,
   setPrice,
   rating,
-  setRating
+  setRating,
+  distance,
+  setDistance
 }) {
-
-  const handleBikeChange = () => { setShowBikes(!showBikes) };
-  const handleScooterChange = () => { setShowScooters(!showScooters) };
-  const handleStars = (value) => { setRating(value) };
+  const handleBikeChange = () => {
+    setShowBikes(!showBikes);
+  };
+  const handleScooterChange = () => {
+    setShowScooters(!showScooters);
+  };
+  const handleStars = (value) => {
+    setRating(value);
+  };
 
   return (
-    <div className="w-64 h-full bg-lighterGray">
-      <div className="w-full h-6 text-center justify-center text-xl py-2 pb-32">
+    <div className="w-64 h-full bg-[#8ac487]">
+      <div className="w-full h-6 text-center py-2 pb-24 text-3xl font-bold text-waxwingDarkGreen">
         Filters
       </div>
-      <div className="space-y-4 pb-32">
-        <div className="w-full h-6 text-center justify-center text-lg">
-          Type
+      <div className="space-y-2 pb-8">
+        <div className="w-full h-6 text-center justify-center text-lg font-bold">
+          Ride Type
         </div>
-        <label className="flex items-center justify-start space-x-4 w-full pl-4">
+        <label className="flex items-center justify-start space-x-6 w-full pl-6">
           <input
             type="checkbox"
             checked={showBikes}
             onChange={handleBikeChange}
             className="accent-[var(--color-waxwingGreen)] w-6 h-6"
           />
-          <span className="text-lg flex-1 text-center">Bikes</span>
+          <span className="text-lg flex-1 text-left">Bikes</span>
         </label>
-        <label className="flex items-center justify-start space-x-4 w-full pl-4">
+        <label className="flex items-center justify-start space-x-6 w-full pl-6">
           <input
             type="checkbox"
             checked={showScooters}
             onChange={handleScooterChange}
             className="accent-[var(--color-waxwingGreen)] w-6 h-6"
           />
-          <span className="text-lg flex-1 text-center">Scooters</span>
+          <span className="text-lg flex-1 text-left">Scooters</span>
         </label>
       </div>
 
-      <div className="space-y-4 pb-32 w-full">
-        <div className="text-center text-lg font-medium">Hourly Price</div>
+      <div className="space-y-2 pb-8 w-full">
+        <div className="w-full h-6 text-center justify-center text-lg font-bold">Hourly Price</div>
         <div className="flex flex-col items-center w-full space-y-2">
           <input
             type="range"
@@ -71,21 +77,46 @@ function LeftBar({
         </div>
       </div>
 
+      <div className="space-y-2 pb-8 w-full">
+        <div className="w-full h-6 text-center justify-center text-lg font-bold">Distance</div>
+        <div className="flex flex-col items-center w-full space-y-2">
+          <input
+            type="range"
+            min="0"
+            max="5"
+            step="0.1"
+            value={distance}
+            onChange={(e) => setDistance(Number(e.target.value))}
+            className="w-3/4 h-2 accent-[var(--color-waxwingGreen)] rounded-lg"
+          />
+          <div className="flex justify-center text-sm font-semibold text-gray-700">
+            <span>{distance} Miles</span>
+          </div>
+        </div>
+      </div>
+
       <div className="space-y-2 w-full flex flex-col items-center">
+      <div className="w-full h-6 text-center justify-center text-lg font-bold">Rating</div>
         <div className="flex space-x-1">
           {[1, 2, 3, 4, 5].map((star) => (
-            <Star
-              key={star}
-              fill={rating >= star ? "var(--color-waxwingGreen)" : "none"}
-              stroke="currentColor"
-              className={`w-8 h-8 cursor-pointer ${rating >= star ? "text-[var(--color-waxwingGreen)]" : "text-gray-300"
-                }`}
-              onClick={() => handleStars(star)}
-            />
+          <Star
+            key={star}
+            fill={rating >= star ? "var(--color-waxwingGreen)" : "#f2f2f2"}
+            strokeWidth={1}
+            // stroke="var(--color-waxwingGreen)"
+            className={`w-8 h-8 cursor-pointer ${
+              rating >= star
+                ? "text-[var(--color-waxwingGreen)]"
+                : "text-gray-300"
+            }`}
+            onClick={() => handleStars(star)}
+          />
           ))}
         </div>
-        <span className="text-center text-lg">
-          {rating > 0 ? `${rating} star${rating > 1 ? "s" : ""}+` : "Any rating"}
+        <span className="flex justify-center text-sm font-semibold text-gray-700">
+          {rating > 0
+            ? `${rating} star${rating > 1 ? "s" : ""}+`
+            : "Any rating"}
         </span>
       </div>
     </div>
@@ -100,7 +131,7 @@ function CreateListingModal({ setIsOpen, setListings }) {
     price: "",
     location: "",
     latitude: "42.3870",
-    longitude: "-72.5289"
+    longitude: "-72.5289",
   });
 
   const handleChange = (e) => {
@@ -116,9 +147,9 @@ function CreateListingModal({ setIsOpen, setListings }) {
       pricePerHour: parseFloat(formData.price),
       location: formData.location,
       latitude: parseFloat(formData.latitude),
-      longitude: parseFloat(formData.longitude)
+      longitude: parseFloat(formData.longitude),
     };
-    console.log(payload)
+    console.log(payload);
     const result = await createListing(payload);
     console.log("Create response", { result });
     setIsOpen(false);
@@ -245,18 +276,19 @@ function CreateListingModal({ setIsOpen, setListings }) {
 
           {/* Right: Map */}
           <div className="w-full md:w-1/2 h-[400px]">
-            <MapDropLocation onPositionChange={(pos) => {
-              console.log("Selected position:", pos);
-              formData.latitude = pos.lat;
-              formData.longitude = pos.lng;
-            }} />
+            <MapDropLocation
+              onPositionChange={(pos) => {
+                console.log("Selected position:", pos);
+                formData.latitude = pos.lat;
+                formData.longitude = pos.lng;
+              }}
+            />
           </div>
         </div>
       </div>
     </div>
   );
 }
-
 
 async function fetchListings(setListings) {
   try {
@@ -267,42 +299,53 @@ async function fetchListings(setListings) {
     const data = await res.json();
 
     // Map backend 'bikes' array to frontend-friendly structure
-    const mappedListings = (data.bikes || []).map(item => ({
+    const mappedListings = (data.bikes || []).map((item) => ({
       id: item.id,
-      imageSrc: item.imageUrl || (item.title === "Bike" ? "/bike.jpg" : "/scooter.jpg"),
+      imageSrc:
+        item.imageUrl || (item.title === "Bike" ? "/bike.jpg" : "/scooter.jpg"),
       model: item.model || item.title,
-      distance: item.distance || 0,
+      latitude: item.latitude,
+      longitude: item.longitude,
+      distance: NaN,
+      description: item.description,
+      location: item.location,
+      title: item.title,
       pricePerHour: item.pricePerHour || 0,
       seller: item.seller || "Unknown",
-      rating: item.rating || Math.floor(Math.random() * 5) + 1
+      rating: item.rating || Math.floor(Math.random() * 5) + 1,
     }));
 
     setListings(mappedListings);
-
   } catch (err) {
     console.error("Error fetching listings:", err);
   }
 }
 
-export default function ListingsPage() {
+function haversineDistanceMiles(lat1, lon1, lat2, lon2) {
+  const R = 3958.8; // Earth radius in miles
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
 
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) *
+      Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) ** 2;
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // distance in miles
+}
+
+export default function ListingsPage() {
   const [price, setPrice] = useState(25);
   const [showBikes, setShowBikes] = useState(true);
   const [showScooters, setShowScooters] = useState(true);
   const [rating, setRating] = useState(0);
+  const [maxDistance, setMaxDistance] = useState(5);
 
   const [createModalIsOpen, setCreateModalIsOpen] = useState(false);
-
-  // const listings = [
-  //   { id: 1, imageSrc: "/bike.jpg", model: "Bike", distance: 2.5, pricePerHour: 15, seller: "JohnDoe123", rating: 4 },
-  //   { id: 2, imageSrc: "/scooter.jpg", model: "Scooter", distance: 1.2, pricePerHour: 1, seller: "JaneSmith456", rating: 5 },
-  //   { id: 3, imageSrc: "/bike.jpg", model: "Bike", distance: 0.8, pricePerHour: 8, seller: "MikeBlue789", rating: 3 },
-  //   { id: 4, imageSrc: "/scooter.jpg", model: "Scooter", distance: 3.4, pricePerHour: 12, seller: "AliceGreen321", rating: 4 },
-  //   { id: 5, imageSrc: "/bike.jpg", model: "Bike", distance: 2.0, pricePerHour: 5, seller: "BobWhite654", rating: 2 },
-  //   { id: 6, imageSrc: "/scooter.jpg", model: "Scooter", distance: 4.1, pricePerHour: 20, seller: "CharlieBrown987", rating: 5 },
-  //   { id: 7, imageSrc: "/bike.jpg", model: "Bike", distance: 1.5, pricePerHour: 7, seller: "DianaYellow159", rating: 4 },
-  //   { id: 8, imageSrc: "/scooter.jpg", model: "Scooter", distance: 2.8, pricePerHour: 3, seller: "EthanPurple753", rating: 3 },
-  // ];
+  const [selectedListing, setSelectedListing] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
 
   // state variables
   const [bikes, setBikes] = useState([]);
@@ -312,13 +355,44 @@ export default function ListingsPage() {
 
   useEffect(() => {
     fetchListings(setListings);
-
+    const saved = localStorage.getItem("userLocation");
+    if (saved) {
+      setUserLocation(JSON.parse(saved));
+    } else {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const loc = { lat: latitude, lng: longitude };
+          localStorage.setItem("userLocation", JSON.stringify(loc));
+          setUserLocation(loc);
+        },
+        (err) => {
+          console.warn("Geolocation error:", err);
+          alert("We need your location to filter by distance.");
+        }
+      );
+    }
   }, []);
-  const filtered = listings.filter((item) => {
+
+const filtered = listings
+  .map(item => {
+    if (!userLocation) return { ...item, distance: null };
+    return {
+      ...item,
+      distance: haversineDistanceMiles(
+        userLocation.lat,
+        userLocation.lng,
+        item.latitude,
+        item.longitude
+      ),
+    };
+  })
+  .filter(item => {
     if (item.model === "Bike" && !showBikes) return false;
     if (item.model === "Scooter" && !showScooters) return false;
     if (item.pricePerHour > price) return false;
     if (item.rating < rating) return false;
+    if (userLocation && item.distance != null && item.distance > maxDistance) return false;
     return true;
   });
 
@@ -328,7 +402,9 @@ export default function ListingsPage() {
       setSearchQuery(query);
       // console.log("fetching search results for:", query); // console log for debugging
       // put proper backend search endpoint here, may need some filtering before sending query
-      const res = await fetch(`http://localhost:8080/listing/bikes?search=${query}`);
+      const res = await fetch(
+        `http://localhost:8080/listing/bikes?search=${query}`
+      );
       const data = await res.json();
       setBikes(data);
     } catch (err) {
@@ -343,13 +419,13 @@ export default function ListingsPage() {
   const handleMessageSeller = async () => {
     try {
       // console.log("messaging seller"); // debug log
-      const res = await fetch('http://localhost:8080/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify()
+      const res = await fetch("http://localhost:8080/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(),
       });
     } catch (err) {
-      console.error('Error messaging seller:', err);
+      console.error("Error messaging seller:", err);
     }
   };
 
@@ -360,19 +436,18 @@ export default function ListingsPage() {
   const handleBook = async () => {
     // console.log("booking listing"); // debug log
     try {
-      const res = await fetch('http://localhost:8080/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify()
+      const res = await fetch("http://localhost:8080/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(),
       });
     } catch (err) {
-      console.error('Error creating booking:', err);
+      console.error("Error creating booking:", err);
     }
   };
 
   return (
     <div className="flex h-screen bg-white">
-
       {createModalIsOpen && (
         <CreateListingModal
           setIsOpen={setCreateModalIsOpen}
@@ -389,6 +464,8 @@ export default function ListingsPage() {
         setPrice={setPrice}
         rating={rating}
         setRating={setRating}
+        distance={maxDistance}
+        setDistance={setMaxDistance}
       />
 
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -415,22 +492,48 @@ export default function ListingsPage() {
               {/* Render listing cards here based on fetched bikes,
               need to figure out proper fields to pass in based on backend data
               */}
-
               {filtered.map((listing) => (
                 <ListingCard
                   key={listing.id}
                   imageSrc={listing.imageSrc}
                   model={listing.model}
-                  distance={listing.distance}
+                  distance={listing.distance ? listing.distance.toFixed(2) : null}
                   pricePerHour={listing.pricePerHour}
                   seller={listing.seller}
                   rating={listing.rating}
                   onMessageSeller={handleMessageSeller}
                   onBook={handleBook}
+                  onClick={() => setSelectedListing(listing)}
                 />
               ))}
-
             </div>
+            {selectedListing && (
+              <div
+                onClick={() => setSelectedListing(null)} // click background to close
+                className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+              >
+                <div
+                  onClick={(e) => e.stopPropagation()} // prevent closing modal when clicking inside
+                  className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-lg"
+                >
+                  <h2 className="text-2xl font-bold mb-4">{selectedListing.model}</h2>
+                  <p>
+                    Title: {selectedListing.title} <br />
+                    Description: {selectedListing.description} <br />
+                    Location: {selectedListing.location} <br />
+                    Price: ${selectedListing.pricePerHour}/hour <br />
+                    Distance: {selectedListing.distance} miles <br />
+                    Seller: {selectedListing.seller}
+                  </p>
+                  <button
+                    onClick={() => setSelectedListing(null)}
+                    className="mt-4 px-4 py-2 bg-waxwingGreen text-white rounded-md hover:bg-waxwingDarkGreen"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </main>
       </div>

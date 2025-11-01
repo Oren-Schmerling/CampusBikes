@@ -11,9 +11,9 @@ services:
     volumes:
       - ./Frontend:/app
       - /app/node_modules
-      - /app/node_modules
     depends_on:
       - springboot
+    # command: npm run dev
   springboot:
     image: local/springboot_app
     container_name: springboot_app
@@ -40,7 +40,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql # Mount the schema file
-      - ./backend/src/main/resources/z-data.sql:/docker-entrypoint-initdb.d/z-data.sql
 
 volumes:
   postgres_data:
