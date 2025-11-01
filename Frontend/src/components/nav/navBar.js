@@ -29,7 +29,7 @@ const NavItem = (icon, text, url = "/") => {
   );
 };
 const AltNavItem = (icon, text, url = "/") => {
-    return (
+  return (
     <div
       data-badge="None"
       data-selected="True"
@@ -64,7 +64,7 @@ const NavBar = () => {
 
   if (!loggedIn) {
     return (
-      <div className="fixed w-full bg-lightGray inline-flex justify-center items-center z-1000">
+      <div className="fixed w-full bg-lightGray inline-flex justify-center items-center z-50">
         {NavItem("accountCircle.svg", "Log in", "/login")}
         {NavItem("plusCircle.svg", "Sign up", "/signup")}
         {NavItem("chat.svg", "Contact us", "/contact")}
@@ -73,17 +73,17 @@ const NavBar = () => {
   }
   return (
     <div className="fixed w-full bg-waxwingGreen z-50 flex items-center px-6 h-16">
-        <div className="flex items-center">
-          <span className="text-3xl font-bold text-white">
-            CampusBikes
-          </span>
-          <img
-            src="/logo.svg"
-            alt="Site Logo"
-            className="h-13 w-auto"
-          />
+      <div className="flex items-center">
+        <span className="text-3xl font-bold text-white">
+          CampusBikes
+        </span>
+        <img
+          src="/logo.svg"
+          alt="Site Logo"
+          className="h-13 w-auto"
+        />
 
-        </div>
+      </div>
       <div className="flex w-full justify-between ml-20">
         {AltNavItem("homeIcon.svg", "Home Page", "/home")}
         {AltNavItem("plusCircle.svg", "Listings", "/listings")}
