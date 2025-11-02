@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import NavBar from "@/components/nav/navBar";
 import Link from "next/link";
 import { login } from "@/api/login"; // <-- we'll create this file next
 
@@ -36,7 +35,7 @@ export default function LoginPage() {
       localStorage.setItem("authToken", result.token);
 
       setMessage("Login successful! Redirecting...");
-      setTimeout(() => router.push("/"), 1500); // redirect to home page
+      setTimeout(() => router.push("/home"), 1500); // redirect to home page
     } catch (error) {
       console.error("Login failed:", error);
       setMessage(error.message || "Invalid credentials. Please try again.");
@@ -47,8 +46,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-lighterGray flex flex-col">
-      <NavBar />
-
       <div className="flex flex-1 justify-center items-center">
         <div className="bg-gray-100 rounded-2xl p-10 w-full max-w-md shadow-lg">
           <h1 className="text-4xl font-bold text-nearBlack mb-8 text-center">
