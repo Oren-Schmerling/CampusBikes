@@ -2,6 +2,7 @@
 
 import ListingCard from "@/components/listings/listingCard";
 import SearchBar from "@/components/listings/searchBar";
+import ListingDetailModal from "@/components/listings/listingDetailModal";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LucideIcon, Star } from "lucide-react";
@@ -123,7 +124,7 @@ function LeftBar({
   );
 }
 
-//Could be a compnent and modified to be reusable
+//Could be a component and modified to be reusable
 function CreateListingModal({ setIsOpen, setListings }) {
   const [formData, setFormData] = useState({
     title: "",
@@ -514,17 +515,18 @@ const filtered = listings
               >
                 <div
                   onClick={(e) => e.stopPropagation()} // prevent closing modal when clicking inside
-                  className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-lg"
+                  className="bg-white rounded-2xl p-6 max-w-lg w-full max-h-[90vh] shadow-lg overflow-y-auto"
                 >
-                  <h2 className="text-2xl font-bold mb-4">{selectedListing.model}</h2>
+                  {/* <h2 className="text-2xl font-bold mb-4">{selectedListing.model}</h2>
                   <p>
                     Title: {selectedListing.title} <br />
                     Description: {selectedListing.description} <br />
                     Location: {selectedListing.location} <br />
                     Price: ${selectedListing.pricePerHour}/hour <br />
                     Distance: {selectedListing.distance} miles <br />
-                    Seller: {selectedListing.seller}
-                  </p>
+                    Seller: {selectedListing.seller} <br />
+                  </p> */}
+                  <ListingDetailModal listing={selectedListing}/>
                   <button
                     onClick={() => setSelectedListing(null)}
                     className="mt-4 px-4 py-2 bg-waxwingGreen text-white rounded-md hover:bg-waxwingDarkGreen"
