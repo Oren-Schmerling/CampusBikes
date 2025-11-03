@@ -517,22 +517,27 @@ const filtered = listings
                   onClick={(e) => e.stopPropagation()} // prevent closing modal when clicking inside
                   className="bg-white rounded-2xl p-6 max-w-lg w-full max-h-[90vh] shadow-lg overflow-y-auto"
                 >
-                  {/* <h2 className="text-2xl font-bold mb-4">{selectedListing.model}</h2>
-                  <p>
-                    Title: {selectedListing.title} <br />
-                    Description: {selectedListing.description} <br />
-                    Location: {selectedListing.location} <br />
-                    Price: ${selectedListing.pricePerHour}/hour <br />
-                    Distance: {selectedListing.distance} miles <br />
-                    Seller: {selectedListing.seller} <br />
-                  </p> */}
                   <ListingDetailModal listing={selectedListing}/>
-                  <button
-                    onClick={() => setSelectedListing(null)}
-                    className="mt-4 px-4 py-2 bg-waxwingGreen text-white rounded-md hover:bg-waxwingDarkGreen"
-                  >
-                    Close
-                  </button>
+
+                  <div className="space-x-2"> 
+                    <button
+                      onClick={() => setSelectedListing(null)}
+                      className="mt-4 px-4 py-2 bg-waxwingGreen text-white rounded-md hover:bg-waxwingDarkGreen"
+                    >
+                      Close
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        handleBook();
+                        setSelectedListing(null)
+                      }}
+                      className="mt-4 px-4 py-2 bg-waxwingGreen text-white rounded-md hover:bg-waxwingDarkGreen"
+                    >
+                      Book
+                    </button>
+                  </div>
+
                 </div>
               </div>
             )}
