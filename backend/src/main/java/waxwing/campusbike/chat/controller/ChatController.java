@@ -22,6 +22,8 @@ public class ChatController {
 
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Payload ChatMessage chatMessage) {
+
+        System.out.printf("Sending message from %s to %s%n", chatMessage.getSenderId(), chatMessage.getRecipientId());
         chatMessage.setId(UUID.randomUUID().toString());
         chatMessage.setTimestamp(LocalDateTime.now());
         chatMessage.setStatus(MessageStatus.SENT);

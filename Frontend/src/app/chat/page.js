@@ -2,11 +2,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FiSend, FiMenu, FiX } from 'react-icons/fi';
 
+//I think these need to be installed via npm
+import { Client } from '@stomp/stompjs';
+import SockJS from "sockjs-client";
+
 export default function ChatPage() {
   const [message, setMessage] = useState('');
   const [selectedChat, setSelectedChat] = useState('John Doe');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const chatEndRef = useRef(null);
+
+  const clientRef = useRef(null);
+  const [connected, setConnected] = useState(false);
+  const [messages, setMessages] = useState([]);
+
 
   const contacts = ['John Doe', 'Sarah Park', 'Emily Tran', 'Campus Support'];
 
@@ -48,11 +57,88 @@ export default function ChatPage() {
   };
 
   useEffect(() => {
+    // Get user data from storage
+    let jwtToken = localStorage.getItem("authToken");
+
+    if (!jwtToken) {
+      console.error("No user data found. Please login first.");
+      window.location.href = '/login';
+      return;
+    }
+
+    // Add the username as a query parameter to the SockJS URL
+    const socket = new SockJS(`http://localhost:8080/ws?token=${jwtToken}`);
+
+    const client = new Client({
+      webSocketFactory: () => socket,
+
+      debug: (str) => {
+        console.log('STOMP:', str);
+      },
+
+      onConnect: (frame) => {
+        console.log('Connected');
+        setConnected(true);
+
+        client.subscribe('/user/queue/messages', (message) => {
+          console.log('Private message received:');
+          //Clean the body by removing the null character
+          const cleanedBody = message.body.replace(/\0/g, '');
+
+          try {
+            const body = JSON.parse(cleanedBody);
+            console.log('Private message received by Tester2:', body);
+
+          } catch (error) {
+            console.error('Error parsing message body at client:', error);
+            console.error('Raw content that failed to parse:', message.body);
+          }
+        });
+      },
+
+      onStompError: (frame) => {
+        console.error('STOMP error:', frame);
+        setConnected(false);
+      }
+    });
+
+    clientRef.current = client;
+    client.activate();
+
+    return () => {
+      client.deactivate();
+    };
+  }, []);
+
+  const sendMessage = (destination, body) => {
+    if (clientRef.current && connected) {
+      clientRef.current.publish({
+        destination,
+        body: JSON.stringify(body)
+      });
+    }
+  };
+
+  useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [conversations, selectedChat]);
 
   return (
     <div className="flex h-screen bg-white relative overflow-hidden">
+
+      <button onClick={() => {
+        //This part is pretty poorly designed but it works for testing
+        // Send a test message from Tester to Tester2
+        sendMessage('/app/chat.sendMessage', {
+          senderId: "Tester",
+          recipientId: "Tester2",
+          content: 'Hello!',
+          type: 'CHAT'
+        });
+        console.log('Test message sent');
+      }}>
+        Send Test Message
+      </button>
       {/* ===== Sidebar ===== */}
       <aside
         className={`fixed lg:static top-0 left-0 h-full w-64 bg-[#f6f9f6] border-r border-gray-200 z-30 transform transition-transform duration-300
@@ -78,9 +164,8 @@ export default function ChatPage() {
                 setSelectedChat(person);
                 setSidebarOpen(false);
               }}
-              className={`w-full text-left px-5 py-4 font-medium text-[#437223] border-b border-gray-100 hover:bg-[#e9f3e7] ${
-                selectedChat === person ? 'bg-[#e9f3e7]' : ''
-              }`}
+              className={`w-full text-left px-5 py-4 font-medium text-[#437223] border-b border-gray-100 hover:bg-[#e9f3e7] ${selectedChat === person ? 'bg-[#e9f3e7]' : ''
+                }`}
             >
               {person}
             </button>
@@ -91,9 +176,8 @@ export default function ChatPage() {
       {/* ===== Overlay for mobile ===== */}
       <div
         onClick={() => setSidebarOpen(false)}
-        className={`fixed inset-0 bg-black bg-opacity-40 z-20 transition-opacity duration-300 lg:hidden ${
-          sidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
+        className={`fixed inset-0 bg-black bg-opacity-40 z-20 transition-opacity duration-300 lg:hidden ${sidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}
       ></div>
 
       {/* ===== Chat Section ===== */}
@@ -119,11 +203,10 @@ export default function ChatPage() {
               className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`px-4 py-2 rounded-xl max-w-[70%] break-words ${
-                  msg.sender === 'user'
-                    ? 'bg-[#f0f7ef] text-[#437223] rounded-br-xl'
-                    : 'bg-[#437223] text-white rounded-bl-xl'
-                }`}
+                className={`px-4 py-2 rounded-xl max-w-[70%] break-words ${msg.sender === 'user'
+                  ? 'bg-[#f0f7ef] text-[#437223] rounded-br-xl'
+                  : 'bg-[#437223] text-white rounded-bl-xl'
+                  }`}
               >
                 {msg.text}
               </div>
