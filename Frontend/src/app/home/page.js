@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import ListingCard from "@/components/listings/listingCard";
 import MapCard from "@/components/home/map";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -75,47 +76,36 @@ const HomePage = () => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <div className="w-1/2 p-4">
-        {loading ? (
-          <div className="h-full bg-white rounded-3xl shadow-lg flex items-center justify-center">
-            <div className="text-gray-600">Loading bikes...</div>
-          </div>
-        ) : (
-          <MapCard bikes={bikes} onBikeClick={(bike) => console.log(bike)} />
-        )}
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
+      <div className="flex-1 p-4">
+        <div className="w-full h-full bg-white rounded-3xl shadow-lg">
+          {loading ? (
+            <div className="h-full bg-white rounded-3xl shadow-lg flex items-center justify-center">
+              <div className="text-gray-600">Loading bikes...</div>
+            </div>
+          ) : (
+            <MapCard bikes={bikes} onBikeClick={(bike) => console.log(bike)} />
+          )}
+        </div>
       </div>
 
-      <div className="w-1/2 p-4 flex flex-col gap-4">
-        <button
-          onClick={() => router.push("/listings")}
-          className="flex-1 bg-white rounded-3xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer group"
-        >
-          <div className="h-full flex flex-col relative">
-            <div className="px-6 py-6 flex items-center justify-between">
-              <h2 className="text-3xl font-bold text-gray-900">
-                Find Bike Listings
-              </h2>
-            </div>
-            <div className="flex-1 flex items-center justify-center relative">
-              <div className="relative w-full h-64 flex items-center justify-center">
-                <Image src="/HomePageImg.png" alt="Rent a bike picture" fill />
-              </div>
-            </div>
-            <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
-              <ChevronRight className="w-6 h-6 text-green-600" />
-            </div>
-          </div>
-        </button>
-
-        <button className="flex-1 bg-white rounded-3xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer group">
-          <div className="h-full flex items-center justify-between px-8">
-            <h2 className="text-5xl font-bold text-gray-900">
-              Rent Out Your Bike
-            </h2>
-            <Bike size={150} />
-          </div>
-        </button>
+      <div className="w-[450px] p-4 flex flex-col">
+        <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+          {bikes.map((listing) => (
+            <ListingCard
+              key={listing.id}
+              imageSrc={listing.imageSrc}
+              model={listing.model}
+              distance={listing.distance ? listing.distance.toFixed(2) : null}
+              pricePerHour={listing.pricePerHour}
+              seller={listing.seller}
+              rating={listing.rating}
+              // onMessageSeller={handleMessageSeller}
+              // onBook={handleBook}
+              onClick={() => setSelectedListing(listing)}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
