@@ -34,6 +34,38 @@ export default function ChatPage() {
     ],
   });
 
+  useEffect(() => {
+    async function fetchMessages() {
+      try {
+        const token = localStorage.getItem('authToken');
+
+
+        const res = await fetch('http://localhost:8080/message/getall', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ otherUsername: "Tester2" })  // Changed to object
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const data = await res.json();
+        console.log(data);
+        console.log(data.messages); // Your messages are in data.messages
+        // setMessages(data.bikes); // Store in state
+
+      } catch (err) {
+        console.error("Error fetching messages:", err);
+      }
+    }
+
+    fetchMessages();
+  }, []);
+
   const handleSendMessage = () => {
     if (!message.trim()) return;
 

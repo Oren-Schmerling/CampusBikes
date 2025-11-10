@@ -41,6 +41,7 @@ public class ChatController {
         chatMessage.setTimestamp(LocalDateTime.now());
         chatMessage.setStatus(MessageStatus.SENT);
 
+        //This is the part that store the message in the database
         String sql = "INSERT INTO messages (sender_id, recipient_id, content) VALUES (?, ?, ?)";
 
         try (Connection conn = dataSource.getConnection();
@@ -63,13 +64,13 @@ public class ChatController {
             stmt.setLong(2, recipientId);
             stmt.setString(3, chatMessage.getContent());
 
-            int rowsAffected = stmt.executeUpdate();
+            stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
         
-        // Send to specific user
+        // This actually sends the message to the recipient
         messagingTemplate.convertAndSendToUser(
             chatMessage.getRecipientId(),
             "/queue/messages",
