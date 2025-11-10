@@ -77,19 +77,8 @@ const HomePage = () => {
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <div className="flex-1 p-4">
-        <div className="w-full h-full bg-white rounded-3xl shadow-lg">
-          {loading ? (
-            <div className="h-full bg-white rounded-3xl shadow-lg flex items-center justify-center">
-              <div className="text-gray-600">Loading bikes...</div>
-            </div>
-          ) : (
-            <MapCard bikes={bikes} onBikeClick={(bike) => console.log(bike)} />
-          )}
-        </div>
-      </div>
 
-      <div className="w-[450px] p-4 flex flex-col">
+      <div className="w-[320px] flex flex-col p-4 pt-2">
         <div className="flex-1 overflow-y-auto space-y-4 pr-2">
           {bikes.map((listing) => (
             <ListingCard
@@ -107,6 +96,19 @@ const HomePage = () => {
           ))}
         </div>
       </div>
+
+      <div className="flex-1 p-4">
+        <div className="w-full h-full bg-white rounded-3xl shadow-lg">
+          {loading ? (
+            <div className="h-full bg-white rounded-3xl shadow-lg flex items-center justify-center">
+              <div className="text-gray-600">Loading bikes...</div>
+            </div>
+          ) : (
+            <MapCard bikes={bikes} onBikeClick={(bike) => console.log(bike)} />
+          )}
+        </div>
+      </div>
+
     </div>
   );
 };
