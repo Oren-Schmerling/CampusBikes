@@ -152,6 +152,7 @@ const MapCard = ({ lat, long }) => {
 };
 
 const ListingDetailModal = ({listing}) => {
+    // console.log(listing);
     return (
         <div className="flex flex-col">
             <h2 className="text-2xl font-bold">{listing.model}</h2>
@@ -160,6 +161,11 @@ const ListingDetailModal = ({listing}) => {
             <div className="max-h-[150px] overflow-y-auto rounded-md p-3 border border-gray-200 mb-2">
                 <p className="text-gray-700 pr-2">{listing.title}</p>
             </div>
+
+            {/* <h3 className="text-waxwingGreen font-bold">Status</h3>
+            <div className="max-h-[150px] overflow-y-auto rounded-md p-3 border border-gray-200 mb-2">
+                <p className="text-gray-700 pr-2">{listing.status}</p>
+            </div> */}
 
             <h3 className="text-waxwingGreen font-bold">Description</h3>
             <div className="max-h-[150px] overflow-y-auto rounded-md p-3 border border-gray-200 mb-2">
@@ -178,7 +184,7 @@ const ListingDetailModal = ({listing}) => {
 
             <h3 className="text-waxwingGreen font-bold">Distance</h3>
             <div className="max-h-[150px] overflow-y-auto rounded-md p-3 border border-gray-200 mb-2">
-                <p className="text-gray-700 pr-2">{listing.distance}</p>
+                <p className="text-gray-700 pr-2">{listing.distance.toFixed(3)} Miles</p>
             </div>
 
             <h3 className="text-waxwingGreen font-bold">Seller</h3>

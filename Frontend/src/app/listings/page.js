@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { LucideIcon, Star } from "lucide-react";
 import { createListing } from "@/api/createListing";
 import MapDropLocation from "@/components/listings/mapDropLocation";
+import BookingModal from "@/components/listings/bookingModal";
 
 // this may eventually be complex enough to be pulled into its own component file
 function LeftBar({
@@ -262,13 +263,13 @@ function CreateListingModal({ setIsOpen, setListings }) {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="flex-1 py-3 rounded-lg border-2 border-gray-300 text-gray-700 font-medium hover:bg-gray-200 transition-colors"
+                className="flex-1 py-3 rounded-lg border-2 border-gray-300 text-gray-700 font-medium hover:bg-gray-200 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex-1 bg-waxwingGreen text-white py-3 rounded-lg font-medium hover:bg-waxwingLightGreen active:bg-waxwingDarkGreen transition-colors"
+                className="flex-1 bg-waxwingGreen text-white py-3 rounded-lg font-medium hover:bg-waxwingLightGreen active:bg-waxwingDarkGreen transition-colors cursor-pointer"
               >
                 Create Listing
               </button>
@@ -347,6 +348,16 @@ export default function ListingsPage() {
   const [createModalIsOpen, setCreateModalIsOpen] = useState(false);
   const [selectedListing, setSelectedListing] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
+
+  const [showBookingModal, setShowBookingModal] = useState(false);
+
+  const handleOpenBookingModal = () => {
+    setShowBookingModal(true);
+  }
+
+  const handleCloseBookingModal = () => {
+    setShowBookingModal(false);
+  }
 
   // state variables
   const [bikes, setBikes] = useState([]);
@@ -502,6 +513,7 @@ const filtered = listings
                   pricePerHour={listing.pricePerHour}
                   seller={listing.seller}
                   rating={listing.rating}
+                  description={listing.description}
                   onMessageSeller={handleMessageSeller}
                   onBook={handleBook}
                   onClick={() => setSelectedListing(listing)}
@@ -519,25 +531,37 @@ const filtered = listings
                 >
                   <ListingDetailModal listing={selectedListing}/>
 
-                  <div className="space-x-2"> 
+                  <div className="mt-6 flex gap-3">
                     <button
                       onClick={() => setSelectedListing(null)}
-                      className="mt-4 px-4 py-2 bg-waxwingGreen text-white rounded-md hover:bg-waxwingDarkGreen"
+                      className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-100 transition cursor-pointer"
                     >
-                      Close
+                      Cancel
                     </button>
-
                     <button
                       onClick={() => {
-                        handleBook();
-                        setSelectedListing(null)
+                        handleOpenBookingModal();
                       }}
-                      className="mt-4 px-4 py-2 bg-waxwingGreen text-white rounded-md hover:bg-waxwingDarkGreen"
+                      className='flex-1 py-3 bg-waxwingGreen text-white rounded-lg font-medium hover:bg-waxwingLightGreen transition cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed'
                     >
                       Book
                     </button>
-                  </div>
 
+                    {/* A little goofy, because this will show up on top of the details popup, may want to change */}
+                    {showBookingModal && (
+                      <BookingModal
+                        show={showBookingModal}
+                        onClose={() => {
+                          handleCloseBookingModal();
+                          setSelectedListing(null);
+                        }}
+                        title={selectedListing.model}
+                        price={selectedListing.pricePerHour}
+                        description={selectedListing.description}
+                        seller={selectedListing.seller}
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
             )}

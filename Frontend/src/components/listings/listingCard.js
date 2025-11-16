@@ -1,18 +1,9 @@
 import Image from "next/image";
-import { useState } from "react";
-
-/* 
-Some TODO stuff:
-
-1. Integrate w/ listing backend
-2. when the browser is compressed or stretched the cards can be weird and overlap, probably want to fix formatting
-3. margins between edges of page and between cards is inconsistent 
-(more space on left and right margins than between cards)
-4. add default image?
-5. Finalize color schemes in the card 
-6. card size is smaller than the figma page (not sure if this is a big deal though)
-
-*/
+import { useState, useEffect } from "react";
+import { createPortal } from 'react-dom';
+import { MapPin, User, Calendar, Clock, DollarSign, X } from 'lucide-react';
+import BookingModal from "@/components/listings/bookingModal";
+import MessageSellerForm from "@/components/listings/messageSellerForm";
 
 /*
 Package for icons used in the listing card component
@@ -21,7 +12,6 @@ can change packages if needed
 
 run npm install lucide-react in the frontend folder if not installed
 */
-import { MapPin, User } from "lucide-react";
 
 const ListingCard = ({
   imageSrc,
@@ -36,6 +26,25 @@ const ListingCard = ({
   description,
   location,
 }) => {
+  const [showBookModal, setShowBookModal] = useState(false);
+  const [showMessageForm, setShowMessageForm] = useState(false);
+
+  const handleOpenBookModal = () => {
+    setShowBookModal(true);
+  };
+
+  const handleCloseBookModal = () => {
+    setShowBookModal(false);
+  };
+
+  const handleOpenMessageForm = () => {
+    setShowMessageForm(true);
+  }
+
+  const handleCloseMessageForm = () => {
+    setShowMessageForm(false);
+  }
+
   return (
     <div
       onClick={onClick} // handle card click
@@ -108,19 +117,44 @@ const ListingCard = ({
         {/* Message and Book buttons, add functionality to them later */}
         <div className="flex justify-between">
           <button
-            // call onMessageSeller function when clicked, put proper parameters later when function is defined
-            onClick={(e) => { e.stopPropagation(); onMessageSeller?.()}}
-            className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300 transition cursor-pointer"
+            onClick={(e) => { e.stopPropagation(); handleOpenMessageForm();}}
+            className="px-3 py-1 text-sm bg-gray-100 rounded-md hover:bg-gray-200 transition cursor-pointer"
           >
             Message Seller
           </button>
+
+          {showMessageForm && 
+            (<MessageSellerForm 
+              seller={seller}
+              title={model}
+              onSend={(message) => {
+                onMessageSeller(message);
+                // temporary alert to simulate message sending
+                alert('Message sent to seller!');
+                handleCloseMessageForm();
+              }}
+              onBack={handleCloseMessageForm}
+            />)
+          }
+
           <button
-            // call onBook function when clicked, put proper parameters later when function is defined
-            onClick={(e) => { e.stopPropagation(); onBook?.(); }}
-            className="px-4 py-1 text-sm bg-waxwingGreen text-white rounded-md hover:bg-waxwingDarkGreen transition cursor-pointer"
+            onClick={(e) => { e.stopPropagation(); handleOpenBookModal();}}
+            className="px-4 py-1 text-sm bg-waxwingGreen text-white rounded-md hover:bg-waxwingLightGreen transition cursor-pointer"
           >
             Book
           </button>
+
+          {showBookModal && 
+            (<BookingModal 
+              show={showBookModal} 
+              onClose={handleCloseBookModal} 
+              title={model}
+              price={pricePerHour}
+              description={description}
+              seller={seller}
+            />)
+          }
+
         </div>
       </div>
     </div>
