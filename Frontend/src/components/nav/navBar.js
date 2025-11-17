@@ -55,12 +55,17 @@ const AltNavItem = (icon, text, url = "/") => {
 }
 
 const NavBar = () => {
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    if (token) setLoggedIn(true);
+    async function checkLogin() {
+      const result = await verifyAuth();
+      setLoggedIn(result.success);
+    }
+    checkLogin();
   }, []);
+
+  if (loggedIn === null) return null;
 
   if (!loggedIn) {
     return (
@@ -92,5 +97,43 @@ const NavBar = () => {
     </div>
   );
 };
+
+export async function verifyAuth() {
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+  const url = `${BASE_URL}/auth/verify`;
+
+  const token = localStorage.getItem("authToken");
+  if (!token) {
+    return { success: false };
+  }
+
+  try {
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    const text = await res.text();
+    let parsed;
+
+    try {
+      parsed = text ? JSON.parse(text) : {};
+    } catch {
+      parsed = { message: text };
+    }
+
+    if (!res.ok) {
+      return { success: false, message: parsed?.message };
+    }
+
+    return { success: true, data: parsed };
+  } catch (err) {
+    console.error("verifyAuth network error:", err);
+    return { success: false };
+  }
+}
 
 export default NavBar;
