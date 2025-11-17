@@ -15,13 +15,13 @@ export default function ChatPage() {
 
   const [conversations, setConversations] = useState({
     'John Doe': [
-      { id: 1, sender: 'rentee', text: 'Hey, this is John. Thanks for reaching out about the apartment!', time: new Date() },
+      { id: 1, sender: 'rentee', text: 'Hey, this is John. Thanks for reaching out about the scooter!', time: new Date() },
     ],
     'Sarah Park': [
       { id: 2, sender: 'rentee', text: 'Hi! I’m Sarah, the owner. Are you still interested in the listing?', time: new Date() },
     ],
     'Emily Tran': [
-      { id: 3, sender: 'rentee', text: 'Hello! This is Emily. Feel free to ask any questions about the place.', time: new Date() },
+      { id: 3, sender: 'rentee', text: 'Hello! This is Emily. Feel free to ask any questions about the bike.', time: new Date() },
     ],
     'Campus Support': [
       { id: 4, sender: 'rentee', text: 'Hi, this is Campus Support. How can we assist you?', time: new Date() },
