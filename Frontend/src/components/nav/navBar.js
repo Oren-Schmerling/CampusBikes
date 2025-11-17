@@ -55,17 +55,40 @@ const AltNavItem = (icon, text, url = "/") => {
 }
 
 const NavBar = () => {
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+  const url = `${BASE_URL}/auth/verify`;
   const [loggedIn, setLoggedIn] = useState(null);
 
   useEffect(() => {
-    async function checkLogin() {
-      const result = await verifyAuth();
-      setLoggedIn(result.success);
-    }
-    checkLogin();
-  }, []);
+    const checkAuth = async () => {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        setLoggedIn(false);
+        return;
+      }
 
-  if (loggedIn === null) return null;
+      console.log("token found in NavBar:", token);
+
+      try {
+        const res = await fetch(url, {
+          method: "GET",
+          headers: { "Authorization": `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+          setLoggedIn(false);
+          return;
+        }
+
+        const data = await res.json();
+        setLoggedIn(data.valid); // true or false
+      } catch (err) {
+        console.error("Auth verification error:", err);
+        setLoggedIn(false);
+      }
+    }
+    checkAuth();
+  }, [url]);
 
   if (!loggedIn) {
     return (
@@ -97,43 +120,5 @@ const NavBar = () => {
     </div>
   );
 };
-
-export async function verifyAuth() {
-  const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-  const url = `${BASE_URL}/auth/verify`;
-
-  const token = localStorage.getItem("authToken");
-  if (!token) {
-    return { success: false };
-  }
-
-  try {
-    const res = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
-    });
-
-    const text = await res.text();
-    let parsed;
-
-    try {
-      parsed = text ? JSON.parse(text) : {};
-    } catch {
-      parsed = { message: text };
-    }
-
-    if (!res.ok) {
-      return { success: false, message: parsed?.message };
-    }
-
-    return { success: true, data: parsed };
-  } catch (err) {
-    console.error("verifyAuth network error:", err);
-    return { success: false };
-  }
-}
 
 export default NavBar;
