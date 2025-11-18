@@ -13,6 +13,9 @@ export default function ChatPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [contacts, setContacts] = useState([]);
   const chatEndRef = useRef(null);
+  const DUMMY_MODE = true; // <-- turn on for testing without backend
+  const dummyContacts = ['John Doe', 'Sarah Park', 'Emily Tran'];
+
 
   const clientRef = useRef(null); 
   const [connected, setConnected] = useState(false);
@@ -46,10 +49,15 @@ export default function ChatPage() {
         text: msg.content,
         time: new Date(msg.timestamp)
       }));
+       if (!DUMMY_MODE) return; // skip dummy if using real backend
+      const dummyMessages = [
+        { id: '1', sender: 'Tester2', text: 'Hi there!', time: new Date() },
+        { id: '2', sender: contactUsername, text: 'Hello!', time: new Date() },
+      ];
 
       setConversations(prev => ({
         ...prev,
-        [contactUsername]: formattedMessages
+        [contactUsername]: dummyMessages
       }));
       setContacts(prev => {
         if (!prev.includes(receivedMessage.sender)) {
