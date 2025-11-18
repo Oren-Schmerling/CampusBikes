@@ -19,62 +19,51 @@ export default function ChatPage() {
   
   const [conversations, setConversations] = useState({});
 
-  // --- Fetch contacts from API ---
-  const fetchContacts = useCallback(async () => {
-    try {
-      const token = localStorage.getItem("authToken");
-      const response = await fetch('http://localhost:8080/api/chat/contacts', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const contactList = await response.json();
-        setContacts(contactList);
-        
-        // Initialize empty conversations for each contact
-        const initialConversations = {};
-        contactList.forEach(contact => {
-          initialConversations[contact] = [];
-        });
-        setConversations(initialConversations);
-      }
-    } catch (error) {
-      console.error('Error fetching contacts:', error);
-    }
-  }, []);
+  
 
   // --- Fetch chat history for selected contact ---
   const fetchChatHistory = useCallback(async (contactUsername) => {
-    try {
-      const token = localStorage.getItem("authToken");
-      const response = await fetch(`http://localhost:8080/api/chat/history/${contactUsername}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+  try {
+    const token = localStorage.getItem("authToken");
+
+    const response = await fetch("http://localhost:8080/message/getall", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        otherUsername: contactUsername
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+
+      const formattedMessages = data.messages.map(msg => ({
+        id: msg.id,
+        sender: msg.senderId,
+        text: msg.content,
+        time: new Date(msg.timestamp)
+      }));
+
+      setConversations(prev => ({
+        ...prev,
+        [contactUsername]: formattedMessages
+      }));
+      setContacts(prev => {
+        if (!prev.includes(receivedMessage.sender)) {
+          return [...prev, receivedMessage.sender];
         }
+        return prev;
       });
-      
-      if (response.ok) {
-        const history = await response.json();
-        const formattedMessages = history.map(msg => ({
-          id: msg.id,
-          sender: msg.senderId,
-          text: msg.content,
-          time: new Date(msg.timestamp)
-        }));
-        
-        setConversations(prev => ({
-          ...prev,
-          [contactUsername]: formattedMessages
-        }));
-      }
-    } catch (error) {
-      console.error('Error fetching chat history:', error);
+
     }
-  }, []);
+  } catch (error) {
+    console.error("Error fetching chat history:", error);
+  }
+}, []);
+
 
   // --- Utility Function: Sends message via STOMP and updates local state ---
   const sendMessage = useCallback((destination, chatMessage) => {
