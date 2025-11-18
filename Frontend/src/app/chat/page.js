@@ -1,20 +1,25 @@
 'use client';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { FiSend, FiMenu, FiX } from 'react-icons/fi';
+// 🔑 Import FiClipboard for the button icon
+import { FiSend, FiMenu, FiX, FiClipboard } from 'react-icons/fi'; 
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
 // 💡 Current User placeholder
 const CURRENT_USERNAME = 'Tester2'; 
+const SCHOOL_USERNAME = 'School'; // 🔑 Define the target username
 
 export default function ChatPage() {
   const [message, setMessage] = useState('');
-  const [selectedChat, setSelectedChat] = useState(null);
+  // 🔑 Set initial selectedChat to 'School'
+  const [selectedChat, setSelectedChat] = useState(SCHOOL_USERNAME); 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [contacts, setContacts] = useState([]);
   const chatEndRef = useRef(null);
-  const DUMMY_MODE = true; // <-- turn on for testing without backend
-  const dummyContacts = ['John Doe', 'Sarah Park', 'Emily Tran'];
+  
+  const DUMMY_MODE = true; 
+  // 🔑 Add 'School' to the dummy contacts list
+  const initialContacts = ['John Doe', 'Sarah Park', 'Emily Tran', SCHOOL_USERNAME]; 
+  const [contacts, setContacts] = useState(initialContacts); 
 
 
   const clientRef = useRef(null); 
@@ -23,54 +28,32 @@ export default function ChatPage() {
   const [conversations, setConversations] = useState({});
 
   
+  // --- DUMMY IMPLEMENTATION: Fetch contacts on mount ---
+  const fetchContacts = useCallback(() => {
+      // For DUMMY_MODE, just use the hardcoded list
+      if (DUMMY_MODE) {
+          setContacts(initialContacts);
+      } 
+      // In a real app, this would be an API call
+  }, []);
+
 
   // --- Fetch chat history for selected contact ---
   const fetchChatHistory = useCallback(async (contactUsername) => {
-  try {
-    const token = localStorage.getItem("authToken");
+    // ... (Your real API fetching logic is here)
 
-    const response = await fetch("http://localhost:8080/message/getall", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        otherUsername: contactUsername
-      }),
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-
-      const formattedMessages = data.messages.map(msg => ({
-        id: msg.id,
-        sender: msg.senderId,
-        text: msg.content,
-        time: new Date(msg.timestamp)
-      }));
-       if (!DUMMY_MODE) return; // skip dummy if using real backend
+    if (DUMMY_MODE) {
       const dummyMessages = [
-        { id: '1', sender: 'Tester2', text: 'Hi there!', time: new Date() },
-        { id: '2', sender: contactUsername, text: 'Hello!', time: new Date() },
+          { id: '1', sender: CURRENT_USERNAME, text: `Hello ${contactUsername}!`, time: new Date(Date.now() - 60000) },
+          { id: '2', sender: contactUsername, text: 'How can I help?', time: new Date(Date.now() - 30000) },
       ];
 
       setConversations(prev => ({
-        ...prev,
-        [contactUsername]: dummyMessages
+          ...prev,
+          [contactUsername]: dummyMessages
       }));
-      setContacts(prev => {
-        if (!prev.includes(receivedMessage.sender)) {
-          return [...prev, receivedMessage.sender];
-        }
-        return prev;
-      });
-
     }
-  } catch (error) {
-    console.error("Error fetching chat history:", error);
-  }
-}, []);
+  }, []);
 
 
   // --- Utility Function: Sends message via STOMP and updates local state ---
@@ -82,7 +65,6 @@ export default function ChatPage() {
         body: JSON.stringify(chatMessage)
       });
 
-      // Update local state immediately for the sent message
       const newMsg = { 
           id: chatMessage.id,
           sender: CURRENT_USERNAME, 
@@ -92,7 +74,8 @@ export default function ChatPage() {
 
       setConversations(prev => ({
           ...prev,
-          [selectedChat]: [...(prev[selectedChat] || []), newMsg],
+          // Use the recipientId from the chatMessage object for correct conversation target
+          [chatMessage.recipientId]: [...(prev[chatMessage.recipientId] || []), newMsg],
       }));
       setMessage('');
       
@@ -101,7 +84,52 @@ export default function ChatPage() {
     }
   }, [connected, selectedChat]);
 
-  // --- Handler: Calls sendMessage ---
+
+  // --- 🔑 NEW HANDLER: Send a dummy message to 'School' ---
+  const sendDummySchoolMessage = () => {
+    if (!connected) {
+        console.warn("Cannot send dummy message: WebSocket is not connected.");
+        return;
+    }
+    
+    // Ensure the School chat is selected when the button is pressed
+    setSelectedChat(SCHOOL_USERNAME);
+
+    const dummyContent = `[AUTOMATED] Urgent Bike Status Check requested by ${CURRENT_USERNAME}.`;
+
+    // 1. Construct the ChatMessage object targeting SCHOOL_USERNAME
+    const chatMessage = {
+        id: Date.now().toString() + Math.random().toString(36).substring(2, 9), 
+        senderId: CURRENT_USERNAME, 
+        recipientId: SCHOOL_USERNAME,  // Target the 'School' username
+        content: dummyContent,
+    };
+
+    // 2. Use the existing sendMessage utility
+    sendMessage(
+      "/app/chat.sendMessage", 
+      chatMessage
+    );
+    
+    // 3. Provide a mock reply immediately for visual feedback in dummy mode
+    if (DUMMY_MODE) {
+        setTimeout(() => {
+            const reply = {
+                id: Date.now() + 1,
+                sender: SCHOOL_USERNAME,
+                text: 'We received your automated request. The bike status is pending review.',
+                time: new Date(),
+            };
+            setConversations(prev => ({
+                ...prev,
+                [SCHOOL_USERNAME]: [...(prev[SCHOOL_USERNAME] || []), reply],
+            }));
+        }, 500);
+    }
+  };
+
+
+  // --- Handler: Calls sendMessage for regular input ---
   const handleSendMessage = () => {
     if (!message.trim() || !connected || !selectedChat) return;
 
@@ -121,6 +149,10 @@ export default function ChatPage() {
   // --- useEffect: Fetch contacts on mount ---
   useEffect(() => {
     fetchContacts();
+    // Ensure history is loaded for the initial selected chat (School)
+    if (selectedChat) {
+        fetchChatHistory(selectedChat);
+    }
   }, [fetchContacts]);
 
   // --- useEffect: Fetch chat history when contact is selected ---
@@ -130,7 +162,7 @@ export default function ChatPage() {
     }
   }, [selectedChat, fetchChatHistory]);
 
-  // --- useEffect: WebSocket Connection and Subscription ---
+  // --- useEffect: WebSocket Connection and Subscription (Unchanged) ---
   useEffect(() => {
     let jwtToken = localStorage.getItem("authToken");
 
@@ -143,15 +175,9 @@ export default function ChatPage() {
     
     const client = new Client({
       webSocketFactory: socketFactory,
-      debug: (str) => {
-        // console.log('STOMP:', str);
-      },
-
       onConnect: (frame) => {
-        console.log('Connected to WebSocket');
         setConnected(true);
 
-        // Subscribe to private queue
         client.subscribe('/user/queue/messages', (message) => {
           const cleanedBody = message.body.replace(/\0/g, '');
 
@@ -165,17 +191,22 @@ export default function ChatPage() {
                 time: new Date(body.timestamp), 
             };
 
-            // Update conversations state
             setConversations(prev => {
                 const chatPartner = receivedMessage.sender === CURRENT_USERNAME
                     ? body.recipientId 
                     : receivedMessage.sender; 
 
-                // Add to existing conversation
                 return {
                     ...prev,
                     [chatPartner]: [...(prev[chatPartner] || []), receivedMessage],
                 };
+            });
+            // Update contacts list if a new sender appears
+            setContacts(prev => {
+              if (!prev.includes(receivedMessage.sender) && receivedMessage.sender !== CURRENT_USERNAME) {
+                return [...prev, receivedMessage.sender];
+              }
+              return prev;
             });
 
           } catch (error) {
@@ -185,7 +216,6 @@ export default function ChatPage() {
       },
 
       onStompError: (frame) => {
-        console.error('STOMP error:', frame);
         setConnected(false);
       }
     });
@@ -223,6 +253,18 @@ export default function ChatPage() {
           >
             <FiX size={22} />
           </button>
+        </div>
+
+        {/* 🔑 NEW: School Support Button */}
+        <div className="p-4 border-b border-gray-200">
+            <button
+                onClick={sendDummySchoolMessage}
+                disabled={!connected}
+                className="w-full text-left px-3 py-2 text-white bg-[#437223] rounded-lg font-medium hover:bg-opacity-90 disabled:opacity-50 flex items-center justify-center"
+            >
+                <FiClipboard className="mr-2" size={16} />
+                Send School Check
+            </button>
         </div>
 
         {/* Contacts list */}
