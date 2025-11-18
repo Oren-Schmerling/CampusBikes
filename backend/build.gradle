@@ -49,6 +49,10 @@ dependencies {
 
 	//made for in memory temp db for testing
 	testImplementation 'com.h2database:h2'
+
+	//WebSocket dependency
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 }
 
 tasks.named('test') {

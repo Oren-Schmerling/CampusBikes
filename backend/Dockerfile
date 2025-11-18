@@ -1,27 +1,32 @@
-# Use an official OpenJDK runtime as a parent image
-FROM openjdk:21-jdk-slim
+# ------------ 1) Build Stage ------------------
+FROM eclipse-temurin:21-jdk AS build
 
-# Set the working directory in the container
-WORKDIR /backend
+WORKDIR /app
 
-# Copy the build.gradle and settings.gradle files
+# Copy Gradle files first (cache dependencies)
 COPY build.gradle settings.gradle ./
-
-# Copy the source code into the container
-COPY src ./src
-
-# Copy the Gradle wrapper files
-COPY gradlew ./
 COPY gradle ./gradle
-
-# Make the Gradle wrapper executable
+COPY gradlew ./
 RUN chmod +x gradlew
 
-# Build the application
-RUN ./gradlew build --no-daemon -x test
+# Download dependencies (cached unless build.gradle changes)
+RUN ./gradlew dependencies --no-daemon || true
 
-# Expose the port the app runs on
+# Copy source code
+COPY src ./src
+
+# Build the JAR
+RUN ./gradlew bootJar --no-daemon
+
+# ------------ 2) Runtime Stage ------------------
+FROM eclipse-temurin:21-jre AS runtime
+
+WORKDIR /app
+
+# Copy only the JAR file from the build stage
+COPY --from=build /app/build/libs/*.jar app.jar
+
 EXPOSE 8080
 
-# Run the application
-CMD ["./gradlew", "bootRun"]
+# Run Spring Boot JAR
+CMD ["java", "-jar", "app.jar"]
