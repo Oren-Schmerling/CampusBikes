@@ -55,12 +55,40 @@ const AltNavItem = (icon, text, url = "/") => {
 }
 
 const NavBar = () => {
-  const [loggedIn, setLoggedIn] = useState(false);
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+  const url = `${BASE_URL}/auth/verify`;
+  const [loggedIn, setLoggedIn] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    if (token) setLoggedIn(true);
-  }, []);
+    const checkAuth = async () => {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        setLoggedIn(false);
+        return;
+      }
+
+      console.log("token found in NavBar:", token);
+
+      try {
+        const res = await fetch(url, {
+          method: "GET",
+          headers: { "Authorization": `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+          setLoggedIn(false);
+          return;
+        }
+
+        const data = await res.json();
+        setLoggedIn(data.valid); // true or false
+      } catch (err) {
+        console.error("Auth verification error:", err);
+        setLoggedIn(false);
+      }
+    }
+    checkAuth();
+  }, [url]);
 
   if (!loggedIn) {
     return (

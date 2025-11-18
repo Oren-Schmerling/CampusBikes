@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import waxwing.campusbike.types.dto.LoginRequest;
 import waxwing.campusbike.auth.service.LoginService;
+import waxwing.campusbike.auth.util.JwtUtil;
 
 @RestController
 @RequestMapping("/auth")
@@ -52,6 +53,30 @@ public class LoginController {
             // Fallback for an unhandled scenario
             response.put("message", "Internal server error during login processing.");
             return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+
+    @GetMapping("/verify")
+    public ResponseEntity<Map<String, Object>> verifyToken(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        Map<String, Object> response = new HashMap<>();
+
+        // No header or missing Bearer
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("valid", false);
+            return ResponseEntity.status(401).body(response);
+        }
+
+        String token = authHeader.substring(7); // remove "Bearer "
+
+        boolean isValid = JwtUtil.validateToken(token); // your backend utility
+
+        response.put("valid", isValid);
+
+        if (isValid) {
+            return ResponseEntity.ok(response);      // 200 OK
+        } else {
+            return ResponseEntity.status(401).body(response); // 401 Unauthorized
         }
     }
 }

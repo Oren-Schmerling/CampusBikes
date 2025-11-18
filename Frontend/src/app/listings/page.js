@@ -35,11 +35,16 @@ function LeftBar({
   };
 
   return (
-    <div className="w-64 h-full bg-[#8ac487]">
-      <div className="w-full h-6 text-center py-2 pb-24 text-3xl font-bold text-waxwingDarkGreen">
-        Filters
+    <div className="w-64 h-[500px] bg-lighterGray rounded-r-3xl overflow-hidden mt-8 border border-lightGray">
+      <div className="w-full bg-waxwingGreen text-white text-2xl font-bold flex items-center justify-center gap-2 h-14.5 rounded-tr-3xl">
+        <img
+          src="filter-svgrepo-com.svg"
+          alt="Filter Icon"
+          className="h-[1em] w-[1em] align-middle"
+        />
+        <span className="align-middle">Filters</span>
       </div>
-      <div className="space-y-2 pb-8">
+      <div className="space-y-2 p-4 pb-8">
         <div className="w-full h-6 text-center justify-center text-lg font-bold">
           Ride Type
         </div>
