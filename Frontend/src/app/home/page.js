@@ -1,17 +1,32 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ListingCard from "@/components/listings/listingCard";
 import MapCard from "@/components/home/map";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { Bike, ChevronRight } from "lucide-react";
+import { CreateListingModal } from "@/components/listings/createListingModal";
 
 const HomePage = () => {
   const [bikes, setBikes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const router = useRouter();
+  const [createModalIsOpen, setCreateModalIsOpen] = useState(false);
+  const [selectedListing, setSelectedListingSlave] = useState("");
+  const [adding, isAdding] = useState(false);
+
+  const scrollToCard = (id) => {
+    const cardElement = document.getElementById(id);
+    cardElement.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  };
+
+  const setSelectedListing = (listing) => {
+    setSelectedListingSlave(listing);
+    scrollToCard(listing);
+  };
 
   useEffect(() => {
     // Only run auth check once router is ready
@@ -76,39 +91,57 @@ const HomePage = () => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-fit bg-gray-50 overflow-hidden">
+      <div className="w-[360px] flex flex-col p-2 pt-2">
+        {createModalIsOpen && (
+          <CreateListingModal
+            setIsOpen={setCreateModalIsOpen}
+            handler={fetchBikes}
+            isAdding={isAdding}
+          />
+        )}
+        <div className="flex-1 overflow-y-auto space-y-4 p-4">
+          {bikes.map((listing) => {
+            if (listing.id === selectedListing) {
+            }
 
-      <div className="w-[320px] flex flex-col p-4 pt-2">
-        <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-          {bikes.map((listing) => (
-            <ListingCard
-              key={listing.id}
-              imageSrc={listing.imageSrc}
-              model={listing.model}
-              distance={listing.distance ? listing.distance.toFixed(2) : null}
-              pricePerHour={listing.pricePerHour}
-              seller={listing.seller}
-              rating={listing.rating}
-              // onMessageSeller={handleMessageSeller}
-              // onBook={handleBook}
-              onClick={() => setSelectedListing(listing)}
-            />
-          ))}
+            return (
+              <ListingCard
+                key={listing.id}
+                imageSrc={listing.imageSrc}
+                model={listing.model}
+                distance={listing.distance ? listing.distance.toFixed(2) : null}
+                pricePerHour={listing.pricePerHour}
+                seller={listing.seller}
+                rating={listing.rating}
+                id={listing.id}
+                // onMessageSeller={handleMessageSeller}
+                // onBook={handleBook}
+                onClick={() => setSelectedListing(listing.id)}
+                selectedListing={selectedListing}
+                bike={listing.id}
+              />
+            );
+          })}
         </div>
       </div>
 
-      <div className="flex-1 p-4">
+      <div className="flex-1 p-1">
         <div className="w-full h-full bg-white rounded-3xl shadow-lg">
           {loading ? (
             <div className="h-full bg-white rounded-3xl shadow-lg flex items-center justify-center">
               <div className="text-gray-600">Loading bikes...</div>
             </div>
           ) : (
-            <MapCard bikes={bikes} onBikeClick={(bike) => console.log(bike)} />
+            <MapCard
+              bikes={bikes}
+              openCreationModal={() => setCreateModalIsOpen(true)}
+              selectBike={(s) => setSelectedListing(s)}
+              selectedBike={selectedListing}
+            />
           )}
         </div>
       </div>
-
     </div>
   );
 };

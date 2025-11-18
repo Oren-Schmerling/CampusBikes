@@ -6,9 +6,10 @@ import ListingDetailModal from "@/components/listings/listingDetailModal";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LucideIcon, Star } from "lucide-react";
-import { createListing } from "@/api/createListing";
 import MapDropLocation from "@/components/listings/mapDropLocation";
 import BookingModal from "@/components/listings/bookingModal";
+import { CreateListingModal } from "@/components/listings/createListingModal";
+import { fetchListings } from "@/api/fetchListings";
 
 // this may eventually be complex enough to be pulled into its own component file
 function LeftBar({
@@ -21,7 +22,7 @@ function LeftBar({
   rating,
   setRating,
   distance,
-  setDistance
+  setDistance,
 }) {
   const handleBikeChange = () => {
     setShowBikes(!showBikes);
@@ -63,7 +64,9 @@ function LeftBar({
       </div>
 
       <div className="space-y-2 pb-8 w-full">
-        <div className="w-full h-6 text-center justify-center text-lg font-bold">Hourly Price</div>
+        <div className="w-full h-6 text-center justify-center text-lg font-bold">
+          Hourly Price
+        </div>
         <div className="flex flex-col items-center w-full space-y-2">
           <input
             type="range"
@@ -80,7 +83,9 @@ function LeftBar({
       </div>
 
       <div className="space-y-2 pb-8 w-full">
-        <div className="w-full h-6 text-center justify-center text-lg font-bold">Distance</div>
+        <div className="w-full h-6 text-center justify-center text-lg font-bold">
+          Distance
+        </div>
         <div className="flex flex-col items-center w-full space-y-2">
           <input
             type="range"
@@ -98,21 +103,23 @@ function LeftBar({
       </div>
 
       <div className="space-y-2 w-full flex flex-col items-center">
-      <div className="w-full h-6 text-center justify-center text-lg font-bold">Rating</div>
+        <div className="w-full h-6 text-center justify-center text-lg font-bold">
+          Rating
+        </div>
         <div className="flex space-x-1">
           {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            fill={rating >= star ? "var(--color-waxwingGreen)" : "#f2f2f2"}
-            strokeWidth={1}
-            // stroke="var(--color-waxwingGreen)"
-            className={`w-8 h-8 cursor-pointer ${
-              rating >= star
-                ? "text-[var(--color-waxwingGreen)]"
-                : "text-gray-300"
-            }`}
-            onClick={() => handleStars(star)}
-          />
+            <Star
+              key={star}
+              fill={rating >= star ? "var(--color-waxwingGreen)" : "#f2f2f2"}
+              strokeWidth={1}
+              // stroke="var(--color-waxwingGreen)"
+              className={`w-8 h-8 cursor-pointer ${
+                rating >= star
+                  ? "text-[var(--color-waxwingGreen)]"
+                  : "text-gray-300"
+              }`}
+              onClick={() => handleStars(star)}
+            />
           ))}
         </div>
         <span className="flex justify-center text-sm font-semibold text-gray-700">
@@ -125,213 +132,15 @@ function LeftBar({
   );
 }
 
-//Could be a component and modified to be reusable
-function CreateListingModal({ setIsOpen, setListings }) {
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    price: "",
-    location: "",
-    latitude: "42.3870",
-    longitude: "-72.5289",
-  });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const payload = {
-      title: formData.title,
-      description: formData.description,
-      pricePerHour: parseFloat(formData.price),
-      location: formData.location,
-      latitude: parseFloat(formData.latitude),
-      longitude: parseFloat(formData.longitude),
-    };
-    console.log(payload);
-    const result = await createListing(payload);
-    console.log("Create response", { result });
-    setIsOpen(false);
-    fetchListings(setListings);
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-black/80"
-        onClick={() => setIsOpen(false)}
-      />
-
-      <div className="relative bg-gray-100 rounded-2xl p-10 w-full max-w-5xl shadow-2xl z-10">
-        {/* Close button */}
-        <button
-          onClick={() => setIsOpen(false)}
-          className="absolute top-4 right-4 text-gray-500 hover:text-nearBlack transition-colors"
-          aria-label="Close"
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-
-        <h2 className="text-3xl font-bold text-nearBlack mb-8 text-center">
-          Create Listing
-        </h2>
-
-        {/* Layout split */}
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* Left: Form */}
-          <form
-            onSubmit={handleSubmit}
-            className="flex flex-col gap-6 w-full md:w-1/2"
-          >
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title
-              </label>
-              <input
-                type="text"
-                name="title"
-                placeholder="Enter listing title"
-                value={formData.title}
-                onChange={handleChange}
-                className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-waxwingGreen focus:border-transparent"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
-              <textarea
-                name="description"
-                placeholder="Describe your listing"
-                value={formData.description}
-                onChange={handleChange}
-                className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-waxwingGreen focus:border-transparent resize-none"
-                rows={4}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price Per Hour ($)
-              </label>
-              <input
-                type="number"
-                name="price"
-                placeholder="0.00"
-                value={formData.price}
-                onChange={handleChange}
-                className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-waxwingGreen focus:border-transparent"
-                step="0.01"
-                min="0"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Location
-              </label>
-              <input
-                type="text"
-                name="location"
-                placeholder="City, State"
-                value={formData.location}
-                onChange={handleChange}
-                className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-waxwingGreen focus:border-transparent"
-              />
-            </div>
-
-            <div className="flex gap-3 mt-4">
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="flex-1 py-3 rounded-lg border-2 border-gray-300 text-gray-700 font-medium hover:bg-gray-200 transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="flex-1 bg-waxwingGreen text-white py-3 rounded-lg font-medium hover:bg-waxwingLightGreen active:bg-waxwingDarkGreen transition-colors cursor-pointer"
-              >
-                Create Listing
-              </button>
-            </div>
-          </form>
-
-          {/* Right: Map */}
-          <div className="w-full md:w-1/2 h-[400px]">
-            <MapDropLocation
-              onPositionChange={(pos) => {
-                console.log("Selected position:", pos);
-                formData.latitude = pos.lat;
-                formData.longitude = pos.lng;
-              }}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-async function fetchListings(setListings) {
-  try {
-    const res = await fetch("http://localhost:8080/listing/bikes");
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
-    const data = await res.json();
-
-    // Map backend 'bikes' array to frontend-friendly structure
-    const mappedListings = (data.bikes || []).map((item) => ({
-      id: item.id,
-      imageSrc:
-        item.imageUrl || (item.title === "Bike" ? "/bike.jpg" : "/scooter.jpg"),
-      model: item.model || item.title,
-      latitude: item.latitude,
-      longitude: item.longitude,
-      distance: NaN,
-      description: item.description,
-      location: item.location,
-      title: item.title,
-      pricePerHour: item.pricePerHour || 0,
-      seller: item.seller || "Unknown",
-      rating: item.rating || Math.floor(Math.random() * 5) + 1,
-    }));
-
-    setListings(mappedListings);
-  } catch (err) {
-    console.error("Error fetching listings:", err);
-  }
-}
-
 function haversineDistanceMiles(lat1, lon1, lat2, lon2) {
   const R = 3958.8; // Earth radius in miles
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
 
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) *
-      Math.cos(lat2 * Math.PI / 180) *
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
       Math.sin(dLon / 2) ** 2;
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
@@ -353,11 +162,11 @@ export default function ListingsPage() {
 
   const handleOpenBookingModal = () => {
     setShowBookingModal(true);
-  }
+  };
 
   const handleCloseBookingModal = () => {
     setShowBookingModal(false);
-  }
+  };
 
   // state variables
   const [bikes, setBikes] = useState([]);
@@ -386,27 +195,28 @@ export default function ListingsPage() {
     }
   }, []);
 
-const filtered = listings
-  .map(item => {
-    if (!userLocation) return { ...item, distance: null };
-    return {
-      ...item,
-      distance: haversineDistanceMiles(
-        userLocation.lat,
-        userLocation.lng,
-        item.latitude,
-        item.longitude
-      ),
-    };
-  })
-  .filter(item => {
-    if (item.model === "Bike" && !showBikes) return false;
-    if (item.model === "Scooter" && !showScooters) return false;
-    if (item.pricePerHour > price) return false;
-    if (item.rating < rating) return false;
-    if (userLocation && item.distance != null && item.distance > maxDistance) return false;
-    return true;
-  });
+  const filtered = listings
+    .map((item) => {
+      if (!userLocation) return { ...item, distance: null };
+      return {
+        ...item,
+        distance: haversineDistanceMiles(
+          userLocation.lat,
+          userLocation.lng,
+          item.latitude,
+          item.longitude
+        ),
+      };
+    })
+    .filter((item) => {
+      if (item.model === "Bike" && !showBikes) return false;
+      if (item.model === "Scooter" && !showScooters) return false;
+      if (item.pricePerHour > price) return false;
+      if (item.rating < rating) return false;
+      if (userLocation && item.distance != null && item.distance > maxDistance)
+        return false;
+      return true;
+    });
 
   // function to handle search bar submissions
   const handleSearch = async (query) => {
@@ -463,7 +273,7 @@ const filtered = listings
       {createModalIsOpen && (
         <CreateListingModal
           setIsOpen={setCreateModalIsOpen}
-          setListings={setListings}
+          handler={() => fetchListings(setListings)}
         />
       )}
       {/* Filter sidebar */}
@@ -509,7 +319,9 @@ const filtered = listings
                   key={listing.id}
                   imageSrc={listing.imageSrc}
                   model={listing.model}
-                  distance={listing.distance ? listing.distance.toFixed(2) : null}
+                  distance={
+                    listing.distance ? listing.distance.toFixed(2) : null
+                  }
                   pricePerHour={listing.pricePerHour}
                   seller={listing.seller}
                   rating={listing.rating}
@@ -529,7 +341,7 @@ const filtered = listings
                   onClick={(e) => e.stopPropagation()} // prevent closing modal when clicking inside
                   className="bg-white rounded-2xl p-6 max-w-lg w-full max-h-[90vh] shadow-lg overflow-y-auto"
                 >
-                  <ListingDetailModal listing={selectedListing}/>
+                  <ListingDetailModal listing={selectedListing} />
 
                   <div className="mt-6 flex gap-3">
                     <button
@@ -542,7 +354,7 @@ const filtered = listings
                       onClick={() => {
                         handleOpenBookingModal();
                       }}
-                      className='flex-1 py-3 bg-waxwingGreen text-white rounded-lg font-medium hover:bg-waxwingLightGreen transition cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed'
+                      className="flex-1 py-3 bg-waxwingGreen text-white rounded-lg font-medium hover:bg-waxwingLightGreen transition cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
                     >
                       Book
                     </button>

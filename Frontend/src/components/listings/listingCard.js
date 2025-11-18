@@ -1,7 +1,8 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { createPortal } from 'react-dom';
-import { MapPin, User, Calendar, Clock, DollarSign, X } from 'lucide-react';
+import { createPortal } from "react-dom";
+import { useRef } from "react";
+import { MapPin, User, Calendar, Clock, DollarSign, X } from "lucide-react";
 import BookingModal from "@/components/listings/bookingModal";
 import MessageSellerForm from "@/components/listings/messageSellerForm";
 
@@ -20,14 +21,18 @@ const ListingCard = ({
   pricePerHour,
   seller,
   rating,
+  id,
   onMessageSeller, // functions to message seller and book a bike
   onBook,
   onClick,
   description,
   location,
+  selectedListing,
+  bike,
 }) => {
   const [showBookModal, setShowBookModal] = useState(false);
   const [showMessageForm, setShowMessageForm] = useState(false);
+  const selectedCard = useRef(null);
 
   const handleOpenBookModal = () => {
     setShowBookModal(true);
@@ -39,23 +44,27 @@ const ListingCard = ({
 
   const handleOpenMessageForm = () => {
     setShowMessageForm(true);
-  }
+  };
 
   const handleCloseMessageForm = () => {
     setShowMessageForm(false);
-  }
+  };
 
   return (
     <div
+      id={id}
       onClick={onClick} // handle card click
-      className="w-75 bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200 
-      transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105 hover:-translate-y-1 cursor-pointer"
+      className={
+        bike === selectedListing
+          ? "w-75 bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200 transition-all duration-300 ease-in-out shadow-xl scale-110 -translate-y-1 hover:cursor-pointer"
+          : "w-75 bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200 transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105 hover:-translate-y-1 cursor-pointer"
+      }
     >
       {/* Image area, temporary placeholder, need to format correctly for what backend returns */}
       <div className="relative w-full h-40 bg-gray-100">
         <Image
           src={imageSrc || "/bike.jpg"}
-          alt={model}
+          alt={model ? model : "image of listed vehicle"}
           fill
           className="object-contain p-4"
         />
@@ -82,7 +91,9 @@ const ListingCard = ({
                 className={`text-lg leading-none ${
                   // may want to adjust the thresholds here,
                   // currently cheapest is (0-5], mid (5-10], expensive >= 10
-                  pricePerHour > 5 * j ? "text-waxwingLightGreen" : "text-gray-300"
+                  pricePerHour > 5 * j
+                    ? "text-waxwingLightGreen"
+                    : "text-gray-300"
                 }`}
               >
                 $
@@ -117,44 +128,49 @@ const ListingCard = ({
         {/* Message and Book buttons, add functionality to them later */}
         <div className="flex justify-between">
           <button
-            onClick={(e) => { e.stopPropagation(); handleOpenMessageForm();}}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpenMessageForm();
+            }}
             className="px-3 py-1 text-sm bg-gray-100 rounded-md hover:bg-gray-200 transition cursor-pointer"
           >
             Message Seller
           </button>
 
-          {showMessageForm && 
-            (<MessageSellerForm 
+          {showMessageForm && (
+            <MessageSellerForm
               seller={seller}
               title={model}
               onSend={(message) => {
                 onMessageSeller(message);
                 // temporary alert to simulate message sending
-                alert('Message sent to seller!');
+                alert("Message sent to seller!");
                 handleCloseMessageForm();
               }}
               onBack={handleCloseMessageForm}
-            />)
-          }
+            />
+          )}
 
           <button
-            onClick={(e) => { e.stopPropagation(); handleOpenBookModal();}}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpenBookModal();
+            }}
             className="px-4 py-1 text-sm bg-waxwingGreen text-white rounded-md hover:bg-waxwingLightGreen transition cursor-pointer"
           >
             Book
           </button>
 
-          {showBookModal && 
-            (<BookingModal 
-              show={showBookModal} 
-              onClose={handleCloseBookModal} 
+          {showBookModal && (
+            <BookingModal
+              show={showBookModal}
+              onClose={handleCloseBookModal}
               title={model}
               price={pricePerHour}
               description={description}
               seller={seller}
-            />)
-          }
-
+            />
+          )}
         </div>
       </div>
     </div>
