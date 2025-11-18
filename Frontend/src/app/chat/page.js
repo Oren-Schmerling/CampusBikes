@@ -1,131 +1,188 @@
 'use client';
-import React, { useState, useRef, useEffect } from 'react';
-import Sidebar from '@/components/chat/Sidebar';
-import ChatHeader from '@/components/chat/ChatHeader';
-import MessageList from '@/components/chat/MessageList';
-import MessageInput from '@/components/chat/MessageInput';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { FiSend, FiMenu, FiX } from 'react-icons/fi';
+import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
+
+// 💡 Current User placeholder
+const CURRENT_USERNAME = 'Tester2'; 
 
 export default function ChatPage() {
   const [message, setMessage] = useState('');
-  const [selectedChat, setSelectedChat] = useState('John Doe');
+  const [selectedChat, setSelectedChat] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [contacts, setContacts] = useState([]);
   const chatEndRef = useRef(null);
 
-  const clientRef = useRef(null);
+  const clientRef = useRef(null); 
   const [connected, setConnected] = useState(false);
-  const [messages, setMessages] = useState([]);
+  
+  const [conversations, setConversations] = useState({});
 
-
-  const contacts = ['John Doe', 'Sarah Park', 'Emily Tran', 'Campus Support'];
-
-  const [conversations, setConversations] = useState({
-    'John Doe': [
-      { id: 1, sender: 'rentee', text: 'Hey, this is John. Thanks for reaching out about the scooter!', time: new Date() },
-    ],
-    'Sarah Park': [
-      { id: 2, sender: 'rentee', text: 'Hi! I’m Sarah, the owner. Are you still interested in the listing?', time: new Date() },
-    ],
-    'Emily Tran': [
-      { id: 3, sender: 'rentee', text: 'Hello! This is Emily. Feel free to ask any questions about the bike.', time: new Date() },
-    ],
-    'Campus Support': [
-      { id: 4, sender: 'rentee', text: 'Hi, this is Campus Support. How can we assist you?', time: new Date() },
-    ],
-  });
-
-  useEffect(() => {
-    async function fetchMessages() {
-      try {
-        const token = localStorage.getItem('authToken');
-
-
-        const res = await fetch('http://localhost:8080/message/getall', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ otherUsername: "Tester2" })  // Changed to object
-        });
-
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
+  // --- Fetch contacts from API ---
+  const fetchContacts = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch('http://localhost:8080/api/chat/contacts', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
-
-        const data = await res.json();
-        console.log(data);
-        console.log(data.messages); // Your messages are in data.messages
-        // setMessages(data.bikes); // Store in state
-
-      } catch (err) {
-        console.error("Error fetching messages:", err);
+      });
+      
+      if (response.ok) {
+        const contactList = await response.json();
+        setContacts(contactList);
+        
+        // Initialize empty conversations for each contact
+        const initialConversations = {};
+        contactList.forEach(contact => {
+          initialConversations[contact] = [];
+        });
+        setConversations(initialConversations);
       }
+    } catch (error) {
+      console.error('Error fetching contacts:', error);
     }
-
-    fetchMessages();
   }, []);
 
-  const handleSendMessage = () => {
-    if (!message.trim()) return;
+  // --- Fetch chat history for selected contact ---
+  const fetchChatHistory = useCallback(async (contactUsername) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`http://localhost:8080/api/chat/history/${contactUsername}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const history = await response.json();
+        const formattedMessages = history.map(msg => ({
+          id: msg.id,
+          sender: msg.senderId,
+          text: msg.content,
+          time: new Date(msg.timestamp)
+        }));
+        
+        setConversations(prev => ({
+          ...prev,
+          [contactUsername]: formattedMessages
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching chat history:', error);
+    }
+  }, []);
 
-    const newMsg = { id: Date.now(), sender: 'renter', text: message, time: new Date() };
-    setConversations(prev => ({
-      ...prev,
-      [selectedChat]: [...(prev[selectedChat] || []), newMsg],
-    }));
-    setMessage('');
+  // --- Utility Function: Sends message via STOMP and updates local state ---
+  const sendMessage = useCallback((destination, chatMessage) => {
+    if (clientRef.current && connected) {
+      
+      clientRef.current.publish({
+        destination,
+        body: JSON.stringify(chatMessage)
+      });
 
-    // Mock Rentee reply
-    setTimeout(() => {
-      const reply = {
-        id: Date.now() + 1,
-        sender: 'rentee',
-        text: 'Got it! I’ll get back to you shortly.',
-        time: new Date(),
+      // Update local state immediately for the sent message
+      const newMsg = { 
+          id: chatMessage.id,
+          sender: CURRENT_USERNAME, 
+          text: chatMessage.content,
+          time: new Date(), 
       };
-      setConversations(prev => ({
-        ...prev,
-        [selectedChat]: [...(prev[selectedChat] || []), reply],
-      }));
-    }, 1000);
-  };
 
+      setConversations(prev => ({
+          ...prev,
+          [selectedChat]: [...(prev[selectedChat] || []), newMsg],
+      }));
+      setMessage('');
+      
+    } else {
+        console.warn("STOMP client is not connected. Message not sent.");
+    }
+  }, [connected, selectedChat]);
+
+  // --- Handler: Calls sendMessage ---
+  const handleSendMessage = () => {
+    if (!message.trim() || !connected || !selectedChat) return;
+
+    const chatMessage = {
+        id: Date.now().toString() + Math.random().toString(36).substring(2, 9), 
+        senderId: CURRENT_USERNAME, 
+        recipientId: selectedChat,  
+        content: message.trim(),
+    };
+
+    sendMessage(
+      "/app/chat.sendMessage", 
+      chatMessage
+    );
+  };
+  
+  // --- useEffect: Fetch contacts on mount ---
   useEffect(() => {
-    // Get user data from storage
+    fetchContacts();
+  }, [fetchContacts]);
+
+  // --- useEffect: Fetch chat history when contact is selected ---
+  useEffect(() => {
+    if (selectedChat) {
+      fetchChatHistory(selectedChat);
+    }
+  }, [selectedChat, fetchChatHistory]);
+
+  // --- useEffect: WebSocket Connection and Subscription ---
+  useEffect(() => {
     let jwtToken = localStorage.getItem("authToken");
 
     if (!jwtToken) {
       console.error("No user data found. Please login first.");
-      window.location.href = '/login';
       return;
     }
 
-    // Add the username as a query parameter to the SockJS URL
-    const socket = new SockJS(`http://localhost:8080/ws?token=${jwtToken}`);
-
+    const socketFactory = () => new SockJS(`http://localhost:8080/ws?token=${jwtToken}`);
+    
     const client = new Client({
-      webSocketFactory: () => socket,
-
+      webSocketFactory: socketFactory,
       debug: (str) => {
-        console.log('STOMP:', str);
+        // console.log('STOMP:', str);
       },
 
       onConnect: (frame) => {
-        console.log('Connected');
+        console.log('Connected to WebSocket');
         setConnected(true);
 
+        // Subscribe to private queue
         client.subscribe('/user/queue/messages', (message) => {
-          console.log('Private message received:');
-          //Clean the body by removing the null character
           const cleanedBody = message.body.replace(/\0/g, '');
 
           try {
             const body = JSON.parse(cleanedBody);
-            console.log('Private message received by Tester2:', body);
+
+            const receivedMessage = {
+                id: body.id,
+                sender: body.senderId, 
+                text: body.content,
+                time: new Date(body.timestamp), 
+            };
+
+            // Update conversations state
+            setConversations(prev => {
+                const chatPartner = receivedMessage.sender === CURRENT_USERNAME
+                    ? body.recipientId 
+                    : receivedMessage.sender; 
+
+                // Add to existing conversation
+                return {
+                    ...prev,
+                    [chatPartner]: [...(prev[chatPartner] || []), receivedMessage],
+                };
+            });
 
           } catch (error) {
             console.error('Error parsing message body at client:', error);
-            console.error('Raw content that failed to parse:', message.body);
           }
         });
       },
@@ -137,26 +194,22 @@ export default function ChatPage() {
     });
 
     clientRef.current = client;
-    client.activate();
+    client.activate(); 
 
     return () => {
-      client.deactivate();
+      if (clientRef.current && clientRef.current.active) {
+        clientRef.current.deactivate();
+      }
     };
   }, []);
 
-  const sendMessage = (destination, body) => {
-    if (clientRef.current && connected) {
-      clientRef.current.publish({
-        destination,
-        body: JSON.stringify(body)
-      });
-    }
-  };
-
+  // --- useEffect: Scroll to bottom ---
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [conversations, selectedChat]);
 
+
+  // --- JSX RENDER ---
   return (
     <div className="flex h-screen bg-white relative overflow-hidden">
       {/* ===== Sidebar ===== */}
@@ -166,7 +219,7 @@ export default function ChatPage() {
       >
         {/* Header */}
         <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-          <h2 className="text-[#437223] font-bold text-lg">People</h2>
+          <h2 className="text-[#437223] font-bold text-lg">Contacts</h2>
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden text-[#437223] hover:opacity-80"
@@ -175,22 +228,26 @@ export default function ChatPage() {
           </button>
         </div>
 
-        {/* People list */}
+        {/* Contacts list */}
         <div className="flex flex-col">
-          {contacts.map((person) => (
-            <button
-              key={person}
-              onClick={() => {
-                setSelectedChat(person);
-                setSidebarOpen(false);
-              }}
-              className={`w-full text-left px-5 py-4 font-medium text-[#437223] border-b border-gray-100 hover:bg-[#e9f3e7] ${
-                selectedChat === person ? 'bg-[#e9f3e7]' : ''
-              }`}
-            >
-              {person}
-            </button>
-          ))}
+          {contacts.length === 0 ? (
+            <div className="px-5 py-4 text-gray-500 text-sm">No contacts yet</div>
+          ) : (
+            contacts.map((person) => (
+              <button
+                key={person}
+                onClick={() => {
+                  setSelectedChat(person);
+                  setSidebarOpen(false);
+                }}
+                className={`w-full text-left px-5 py-4 font-medium text-[#437223] border-b border-gray-100 hover:bg-[#e9f3e7] ${
+                  selectedChat === person ? 'bg-[#e9f3e7]' : ''
+                }`}
+              >
+                {person}
+              </button>
+            ))
+          )}
         </div>
       </aside>
 
@@ -204,58 +261,75 @@ export default function ChatPage() {
 
       {/* Chat section */}
       <div className="flex flex-col flex-1 relative z-10">
-        {/* Header */}
-        <header className="bg-white border-b border-[#437223] p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="text-[#437223] hover:opacity-80 lg:hidden"
-            >
-              <FiMenu size={24} />
-            </button>
-            <h1 className="text-[#437223] font-bold text-lg">{selectedChat}</h1>
-          </div>
-        </header>
-
-        {/* Messages */}
-        <main className="flex-1 overflow-y-auto p-4 space-y-2 bg-white">
-          {(conversations[selectedChat] || []).map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`px-4 py-2 rounded-xl max-w-[70%] break-words ${
-                  msg.sender === 'user'
-                    ? 'bg-[#f0f7ef] text-[#437223] rounded-br-xl'
-                    : 'bg-[#437223] text-white rounded-bl-xl'
-                }`}
-              >
-                {msg.text}
+        {selectedChat ? (
+          <>
+            {/* Header */}
+            <header className="bg-white border-b border-[#437223] p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="text-[#437223] hover:opacity-80 lg:hidden"
+                >
+                  <FiMenu size={24} />
+                </button>
+                <h1 className="text-[#437223] font-bold text-lg">{selectedChat}</h1>
               </div>
-            </div>
-          ))}
-          <div ref={chatEndRef} />
-        </main>
+            </header>
 
-        {/* Input */}
-        <div className="border-t border-[#437223] p-3 flex items-center gap-2">
-          <input
-            type="text"
-            placeholder="Type a message..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-            className="flex-1 px-4 py-2 border border-[#437223] rounded-full focus:outline-none focus:ring-2 focus:ring-[#437223]"
-          />
-          <button
-            onClick={handleSendMessage}
-            disabled={!message.trim()}
-            className="bg-[#437223] text-white p-2 rounded-full disabled:opacity-50 hover:opacity-90"
-          >
-            <FiSend size={20} />
-          </button>
-        </div>
+            {/* Messages */}
+            <main className="flex-1 overflow-y-auto p-4 space-y-2 bg-white">
+              {(conversations[selectedChat] || []).map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex ${msg.sender === CURRENT_USERNAME ? 'justify-end' : 'justify-start'}`} 
+                >
+                  <div
+                    className={`px-4 py-2 rounded-xl max-w-[70%] break-words ${
+                      msg.sender === CURRENT_USERNAME
+                        ? 'bg-[#f0f7ef] text-[#437223] rounded-br-xl'
+                        : 'bg-[#437223] text-white rounded-bl-xl'
+                    }`}
+                  >
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+              <div ref={chatEndRef} />
+            </main>
+
+            {/* Input */}
+            <div className="border-t border-[#437223] p-3 flex items-center gap-2">
+              <input
+                type="text"
+                placeholder={connected ? "Type a message..." : "Connecting..."}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                disabled={!connected} 
+                className="flex-1 px-4 py-2 border border-[#437223] rounded-full focus:outline-none focus:ring-2 focus:ring-[#437223] disabled:bg-gray-100"
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={!message.trim() || !connected}
+                className="bg-[#437223] text-white p-2 rounded-full disabled:opacity-50 hover:opacity-90"
+              >
+                <FiSend size={20} />
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center text-gray-500">
+            <div className="text-center">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden mb-4 text-[#437223] hover:opacity-80"
+              >
+                <FiMenu size={32} className="mx-auto" />
+              </button>
+              <p className="text-lg">Select a contact to start chatting</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
