@@ -1,189 +1,108 @@
 'use client';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-// 🔑 Import FiClipboard for the button icon
-import { FiSend, FiMenu, FiX, FiClipboard } from 'react-icons/fi'; 
+import { FiSend, FiMenu, FiX } from 'react-icons/fi';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
-// 💡 Current User placeholder
-const CURRENT_USERNAME = 'Tester2'; 
-const SCHOOL_USERNAME = 'School'; // 🔑 Define the target username
+// 💡 1. Sender is 'wesh' as requested
+const CURRENT_USERNAME = 'wesh'; 
 
 export default function ChatPage() {
   const [message, setMessage] = useState('');
-  // 🔑 Set initial selectedChat to 'School'
-  const [selectedChat, setSelectedChat] = useState(SCHOOL_USERNAME); 
+  const [selectedChat, setSelectedChat] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [contacts, setContacts] = useState(['John Doe', 'Sarah Park', 'School']); // Added School to list
   const chatEndRef = useRef(null);
-  
-  const DUMMY_MODE = true; 
-  // 🔑 Add 'School' to the dummy contacts list
-  const initialContacts = ['John Doe', 'Sarah Park', 'Emily Tran', SCHOOL_USERNAME]; 
-  const [contacts, setContacts] = useState(initialContacts); 
-
 
   const clientRef = useRef(null); 
   const [connected, setConnected] = useState(false);
-  
   const [conversations, setConversations] = useState({});
 
-  
-  // --- DUMMY IMPLEMENTATION: Fetch contacts on mount ---
-  const fetchContacts = useCallback(() => {
-      // For DUMMY_MODE, just use the hardcoded list
-      if (DUMMY_MODE) {
-          setContacts(initialContacts);
-      } 
-      // In a real app, this would be an API call
-  }, []);
-
-
-  // --- Fetch chat history for selected contact ---
-  const fetchChatHistory = useCallback(async (contactUsername) => {
-    // ... (Your real API fetching logic is here)
-
-    if (DUMMY_MODE) {
-      const dummyMessages = [
-          { id: '1', sender: CURRENT_USERNAME, text: `Hello ${contactUsername}!`, time: new Date(Date.now() - 60000) },
-          { id: '2', sender: contactUsername, text: 'How can I help?', time: new Date(Date.now() - 30000) },
-      ];
-
-      setConversations(prev => ({
-          ...prev,
-          [contactUsername]: dummyMessages
-      }));
-    }
-  }, []);
-
-
-  // --- Utility Function: Sends message via STOMP and updates local state ---
+  // --- 2. This function hits your Java @MessageMapping("/chat.sendMessage") ---
   const sendMessage = useCallback((destination, chatMessage) => {
     if (clientRef.current && connected) {
       
+      // ⚡ THIS IS THE API CALL ⚡
+      // It sends the data through the socket to your Java Controller
       clientRef.current.publish({
         destination,
         body: JSON.stringify(chatMessage)
       });
 
+      // Update UI immediately
       const newMsg = { 
-          id: chatMessage.id,
+          id: chatMessage.id || Date.now(),
           sender: CURRENT_USERNAME, 
           text: chatMessage.content,
           time: new Date(), 
       };
 
+      const targetChat = chatMessage.recipientId;
+
       setConversations(prev => ({
           ...prev,
-          // Use the recipientId from the chatMessage object for correct conversation target
-          [chatMessage.recipientId]: [...(prev[chatMessage.recipientId] || []), newMsg],
+          [targetChat]: [...(prev[targetChat] || []), newMsg],
       }));
       setMessage('');
       
     } else {
-        console.warn("STOMP client is not connected. Message not sent.");
+        alert("STOMP client is not connected. Cannot send message.");
     }
-  }, [connected, selectedChat]);
+  }, [connected]);
 
+  // --- 🔴 3. The Test Button Logic You Requested ---
+  const sendToSchool = () => {
+    // Switch view to school so you can see the chat
+    setSelectedChat('School');
 
-  // --- 🔑 NEW HANDLER: Send a dummy message to 'School' ---
-  const sendDummySchoolMessage = () => {
-    if (!connected) {
-        console.warn("Cannot send dummy message: WebSocket is not connected.");
-        return;
-    }
-    
-    // Ensure the School chat is selected when the button is pressed
-    setSelectedChat(SCHOOL_USERNAME);
-
-    const dummyContent = `[AUTOMATED] Urgent Bike Status Check requested by ${CURRENT_USERNAME}.`;
-
-    // 1. Construct the ChatMessage object targeting SCHOOL_USERNAME
     const chatMessage = {
-        id: Date.now().toString() + Math.random().toString(36).substring(2, 9), 
+        // senderId: 'wesh' (from const above)
         senderId: CURRENT_USERNAME, 
-        recipientId: SCHOOL_USERNAME,  // Target the 'School' username
-        content: dummyContent,
+        
+        // recipientId: 'School' (Must exist in your DB 'users' table!)
+        recipientId: 'School',     
+        
+        // content: 'Hello'
+        content: 'Hello'           
     };
 
-    // 2. Use the existing sendMessage utility
-    sendMessage(
-      "/app/chat.sendMessage", 
-      chatMessage
-    );
-    
-    // 3. Provide a mock reply immediately for visual feedback in dummy mode
-    if (DUMMY_MODE) {
-        setTimeout(() => {
-            const reply = {
-                id: Date.now() + 1,
-                sender: SCHOOL_USERNAME,
-                text: 'We received your automated request. The bike status is pending review.',
-                time: new Date(),
-            };
-            setConversations(prev => ({
-                ...prev,
-                [SCHOOL_USERNAME]: [...(prev[SCHOOL_USERNAME] || []), reply],
-            }));
-        }, 500);
-    }
+    console.log("Sending to API:", chatMessage);
+
+    // Calls the function that publishes to your backend
+    sendMessage("/app/chat.sendMessage", chatMessage);
   };
 
-
-  // --- Handler: Calls sendMessage for regular input ---
+  // --- Normal Send Handler ---
   const handleSendMessage = () => {
     if (!message.trim() || !connected || !selectedChat) return;
 
     const chatMessage = {
-        id: Date.now().toString() + Math.random().toString(36).substring(2, 9), 
         senderId: CURRENT_USERNAME, 
         recipientId: selectedChat,  
         content: message.trim(),
     };
 
-    sendMessage(
-      "/app/chat.sendMessage", 
-      chatMessage
-    );
+    sendMessage("/app/chat.sendMessage", chatMessage);
   };
-  
-  // --- useEffect: Fetch contacts on mount ---
+
+  // --- WebSocket Connection Setup ---
   useEffect(() => {
-    fetchContacts();
-    // Ensure history is loaded for the initial selected chat (School)
-    if (selectedChat) {
-        fetchChatHistory(selectedChat);
-    }
-  }, [fetchContacts]);
-
-  // --- useEffect: Fetch chat history when contact is selected ---
-  useEffect(() => {
-    if (selectedChat) {
-      fetchChatHistory(selectedChat);
-    }
-  }, [selectedChat, fetchChatHistory]);
-
-  // --- useEffect: WebSocket Connection and Subscription (Unchanged) ---
-  useEffect(() => {
-    let jwtToken = localStorage.getItem("authToken");
-
-    if (!jwtToken) {
-      console.error("No user data found. Please login first.");
-      return;
-    }
-
-    const socketFactory = () => new SockJS(`http://localhost:8080/ws?token=${jwtToken}`);
+    const token = localStorage.getItem("authToken"); // Assuming you need auth
+    
+    // Connect to your Spring Boot Endpoint
+    const socketFactory = () => new SockJS(`http://localhost:8080/ws?token=${token}`);
     
     const client = new Client({
       webSocketFactory: socketFactory,
       onConnect: (frame) => {
+        console.log('Connected to WebSocket');
         setConnected(true);
 
+        // Listen for incoming messages from backend
         client.subscribe('/user/queue/messages', (message) => {
           const cleanedBody = message.body.replace(/\0/g, '');
-
           try {
             const body = JSON.parse(cleanedBody);
-
             const receivedMessage = {
                 id: body.id,
                 sender: body.senderId, 
@@ -201,21 +120,13 @@ export default function ChatPage() {
                     [chatPartner]: [...(prev[chatPartner] || []), receivedMessage],
                 };
             });
-            // Update contacts list if a new sender appears
-            setContacts(prev => {
-              if (!prev.includes(receivedMessage.sender) && receivedMessage.sender !== CURRENT_USERNAME) {
-                return [...prev, receivedMessage.sender];
-              }
-              return prev;
-            });
-
           } catch (error) {
-            console.error('Error parsing message body at client:', error);
+            console.error('Error parsing message:', error);
           }
         });
       },
-
       onStompError: (frame) => {
+        console.error('STOMP error:', frame);
         setConnected(false);
       }
     });
@@ -224,55 +135,44 @@ export default function ChatPage() {
     client.activate(); 
 
     return () => {
-      if (clientRef.current && clientRef.current.active) {
-        clientRef.current.deactivate();
-      }
+      if (clientRef.current) clientRef.current.deactivate();
     };
   }, []);
 
-  // --- useEffect: Scroll to bottom ---
+  // --- Scroll to bottom ---
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [conversations, selectedChat]);
 
 
-  // --- JSX RENDER ---
+  // --- RENDER ---
   return (
     <div className="flex h-screen bg-white relative overflow-hidden">
-      {/* ===== Sidebar ===== */}
+      {/* Sidebar */}
       <aside
         className={`fixed lg:static top-0 left-0 h-full w-64 bg-[#f6f9f6] border-r border-gray-200 z-30 transform transition-transform duration-300
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
-        {/* Header */}
         <div className="p-4 border-b border-gray-200 flex justify-between items-center">
           <h2 className="text-[#437223] font-bold text-lg">Contacts</h2>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-[#437223] hover:opacity-80"
-          >
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-[#437223]">
             <FiX size={22} />
           </button>
         </div>
 
-        {/* 🔑 NEW: School Support Button */}
+        {/* 🔴 4. THE BUTTON YOU ASKED FOR */}
         <div className="p-4 border-b border-gray-200">
-            <button
-                onClick={sendDummySchoolMessage}
-                disabled={!connected}
-                className="w-full text-left px-3 py-2 text-white bg-[#437223] rounded-lg font-medium hover:bg-opacity-90 disabled:opacity-50 flex items-center justify-center"
+            <button 
+                onClick={sendToSchool}
+                className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition"
             >
-                <FiClipboard className="mr-2" size={16} />
-                Send School Check
+                Send "Hello" to School
             </button>
         </div>
 
-        {/* Contacts list */}
+        {/* Contacts List */}
         <div className="flex flex-col">
-          {contacts.length === 0 ? (
-            <div className="px-5 py-4 text-gray-500 text-sm">No contacts yet</div>
-          ) : (
-            contacts.map((person) => (
+            {contacts.map((person) => (
               <button
                 key={person}
                 onClick={() => {
@@ -285,41 +185,33 @@ export default function ChatPage() {
               >
                 {person}
               </button>
-            ))
-          )}
+            ))}
         </div>
       </aside>
 
-      {/* Overlay for mobile */}
+      {/* Mobile Overlay */}
       <div
         onClick={() => setSidebarOpen(false)}
-        className={`fixed inset-0 bg-black bg-opacity-40 z-20 transition-opacity duration-300 lg:hidden ${
-          sidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        className={`fixed inset-0 bg-black bg-opacity-40 z-20 lg:hidden ${
+          sidebarOpen ? 'block' : 'hidden'
         }`}
       ></div>
 
-      {/* Chat section */}
+      {/* Chat Area */}
       <div className="flex flex-col flex-1 relative z-10">
         {selectedChat ? (
           <>
-            {/* Header */}
-            <header className="bg-white border-b border-[#437223] p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setSidebarOpen(true)}
-                  className="text-[#437223] hover:opacity-80 lg:hidden"
-                >
+            <header className="bg-white border-b border-[#437223] p-4 flex items-center gap-3">
+                <button onClick={() => setSidebarOpen(true)} className="text-[#437223] lg:hidden">
                   <FiMenu size={24} />
                 </button>
                 <h1 className="text-[#437223] font-bold text-lg">{selectedChat}</h1>
-              </div>
             </header>
 
-            {/* Messages */}
             <main className="flex-1 overflow-y-auto p-4 space-y-2 bg-white">
-              {(conversations[selectedChat] || []).map((msg) => (
+              {(conversations[selectedChat] || []).map((msg, index) => (
                 <div
-                  key={msg.id}
+                  key={msg.id || index}
                   className={`flex ${msg.sender === CURRENT_USERNAME ? 'justify-end' : 'justify-start'}`} 
                 >
                   <div
@@ -336,7 +228,6 @@ export default function ChatPage() {
               <div ref={chatEndRef} />
             </main>
 
-            {/* Input */}
             <div className="border-t border-[#437223] p-3 flex items-center gap-2">
               <input
                 type="text"
@@ -345,12 +236,12 @@ export default function ChatPage() {
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                 disabled={!connected} 
-                className="flex-1 px-4 py-2 border border-[#437223] rounded-full focus:outline-none focus:ring-2 focus:ring-[#437223] disabled:bg-gray-100"
+                className="flex-1 px-4 py-2 border border-[#437223] rounded-full focus:outline-none focus:ring-2 focus:ring-[#437223]"
               />
               <button
                 onClick={handleSendMessage}
                 disabled={!message.trim() || !connected}
-                className="bg-[#437223] text-white p-2 rounded-full disabled:opacity-50 hover:opacity-90"
+                className="bg-[#437223] text-white p-2 rounded-full disabled:opacity-50"
               >
                 <FiSend size={20} />
               </button>
@@ -358,15 +249,7 @@ export default function ChatPage() {
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center text-gray-500">
-            <div className="text-center">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden mb-4 text-[#437223] hover:opacity-80"
-              >
-                <FiMenu size={32} className="mx-auto" />
-              </button>
-              <p className="text-lg">Select a contact to start chatting</p>
-            </div>
+             <p>Select a contact or click the button to test</p>
           </div>
         )}
       </div>
