@@ -6,6 +6,8 @@ public class Message {
     private Long id;
     private Long senderId;
     private Long recipientId;
+    private String senderUsername;
+    private String recipientUsername;
     private String content;
     private Timestamp createdAt;
 
@@ -17,10 +19,12 @@ public class Message {
     }
 
     // Full constructor
-    public Message(Long id, Long senderId, Long recipientId, String content, Timestamp createdAt) {
+    public Message(Long id, Long senderId, Long recipientId, String senderUsername, String recipientUsername, String content, Timestamp createdAt) {
         this.id = id;
         this.senderId = senderId;
         this.recipientId = recipientId;
+        this.senderUsername = senderUsername;
+        this.recipientUsername = recipientUsername;
         this.content = content;
         this.createdAt = createdAt;
     }
@@ -36,6 +40,14 @@ public class Message {
 
     public Long getRecipientId() {
         return recipientId;
+    }
+
+    public String getSenderUsername() {
+        return senderUsername;
+    }
+
+    public String getRecipientUsername() {
+        return recipientUsername;
     }
 
     public String getContent() {
@@ -57,6 +69,14 @@ public class Message {
 
     public void setRecipientId(Long recipientId) {
         this.recipientId = recipientId;
+    }
+
+    public void setSenderUsername(String senderUsername) {
+        this.senderUsername = senderUsername;
+    }
+
+    public void setRecipientUsername(String recipientUsername) {
+        this.recipientUsername = recipientUsername;
     }
 
     public void setContent(String content) {

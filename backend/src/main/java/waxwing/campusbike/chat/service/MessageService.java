@@ -51,10 +51,15 @@ public class MessageService {
         
         // Get all messages between these two users
         String sql = """
-            SELECT * FROM messages 
-            WHERE (sender_id = ? AND recipient_id = ?) 
-               OR (sender_id = ? AND recipient_id = ?)
-            ORDER BY created_at ASC
+            SELECT m.id, m.sender_id, m.recipient_id, m.content, m.created_at,
+                   us.username AS sender_username,
+                   ur.username AS recipient_username
+            FROM messages m
+            JOIN users us ON m.sender_id = us.id
+            JOIN users ur ON m.recipient_id = ur.id
+            WHERE (m.sender_id = ? AND m.recipient_id = ?)
+               OR (m.sender_id = ? AND m.recipient_id = ?)
+            ORDER BY m.created_at ASC
         """;
         
         messages = jdbcTemplate.query(
@@ -63,6 +68,8 @@ public class MessageService {
                 rs.getLong("id"),
                 rs.getLong("sender_id"),
                 rs.getLong("recipient_id"),
+                rs.getString("sender_username"),
+                rs.getString("recipient_username"),
                 rs.getString("content"),
                 rs.getTimestamp("created_at")
             ),
