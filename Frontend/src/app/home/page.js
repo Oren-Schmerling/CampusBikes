@@ -13,7 +13,6 @@ const HomePage = () => {
   const router = useRouter();
   const [createModalIsOpen, setCreateModalIsOpen] = useState(false);
   const [selectedListing, setSelectedListingSlave] = useState("");
-  const [adding, isAdding] = useState(false);
 
   const scrollToCard = (id) => {
     const cardElement = document.getElementById(id);
@@ -97,7 +96,6 @@ const HomePage = () => {
           <CreateListingModal
             setIsOpen={setCreateModalIsOpen}
             handler={fetchBikes}
-            isAdding={isAdding}
           />
         )}
         <div className="flex-1 overflow-y-auto space-y-4 p-4">

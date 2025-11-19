@@ -3,7 +3,7 @@ import { useState } from "react";
 import { createListing } from "@/api/createListing";
 import { fetchListings } from "@/api/fetchListings";
 
-export function CreateListingModal({ setIsOpen, handler, isAdding }) {
+export function CreateListingModal({ setIsOpen, handler }) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -19,7 +19,6 @@ export function CreateListingModal({ setIsOpen, handler, isAdding }) {
   };
 
   const handleSubmit = async (e) => {
-    isAdding(true);
     e.preventDefault();
     const payload = {
       title: formData.title,
