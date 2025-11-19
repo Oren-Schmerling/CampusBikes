@@ -31,11 +31,10 @@ export default function ChatPage() {
   const [connected, setConnected] = useState(false);
   const [currentUsername, setCurrentUsername] = useState(null); // State to store the decoded current username
 
-  const [conversations, setConversations] = useState({
-    Ashray: []
-  });
+  // conversations keyed by username
+  const [conversations, setConversations] = useState({});
 
-  // These are the users you want to chat with. The current user's username is stored in 'currentUsername'.
+  // contacts state (fixed: previously was a const)
   const [contacts, setContacts] = useState([]);
 
   // --- Initial Setup: Decode JWT and Fetch Chat History ---
@@ -53,65 +52,80 @@ export default function ChatPage() {
         return;
       }
 
-      // We no longer rely on localStorage.getItem("username") directly for fetching
-      // but use the decoded username.
-      localStorage.setItem("username", username); // Ensure localStorage has it for the subsequent functions
-
+      // Ensure localStorage has username for other pieces of code that rely on it
+      localStorage.setItem("username", username);
     } else {
       console.error("Missing token");
       window.location.href = '/login';
       return;
     }
 
+    // fetchMessages defined and invoked within effect
     async function fetchMessages() {
       try {
         const token = localStorage.getItem("authToken");
         const username = localStorage.getItem("username");
 
-        if (!token || !username) {
-          return;
-        }
+        if (!token || !username) return;
 
+        // 1️⃣ Fetch list of people I have chatted with
         const res = await fetch("http://localhost:8080/message/getrecipients", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`
-          },
+          }
         });
 
-        const data = await res.json();
-        console.log("this is the data", data);
-
-        setContacts(data.usernames);
-        setSelectedChat(data.usernames[0])
-
-        async function loadChat(otherUsername) {
-          const res = await fetch("http://localhost:8080/message/getall", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify({ otherUsername })
-          });
-
-          const chatData = await res.json();
-
-          const formatted = chatData.messages.map((m) => ({
-            id: m.id,
-            sender: m.senderUsername === username ? "user" : "ai",
-            text: m.content
-          }));
-
-          setConversations((prev) => ({
-            ...prev,
-            [otherUsername]: formatted
-          }));
+        if (!res.ok) {
+          console.error("Failed to fetch recipients:", res.status, await res.text());
+          return;
         }
 
-        for (const contact of data.usernames) {
-          await loadChat(contact);
+        const data = await res.json();
+        const userList = Array.isArray(data.usernames) ? data.usernames : [];
+
+        // set contacts
+        setContacts(userList);
+
+        // default selected chat: first recipient if available, else keep empty
+        setSelectedChat(userList[0] || '');
+
+        // 2️⃣ Load chat with each person
+        async function loadChat(otherUsername) {
+          try {
+            const res = await fetch("http://localhost:8080/message/getall", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+              },
+              body: JSON.stringify({ otherUsername })
+            });
+
+            if (!res.ok) {
+              console.error(`Failed to load chat for ${otherUsername}:`, res.status, await res.text());
+              return;
+            }
+
+            const chatData = await res.json();
+            const formatted = Array.isArray(chatData.messages) ? chatData.messages.map((m) => ({
+              id: m.id,
+              text: m.content,
+              sender: m.senderUsername === username ? "user" : "ai"
+            })) : [];
+
+            setConversations((prev) => ({
+              ...prev,
+              [otherUsername]: formatted
+            }));
+          } catch (err) {
+            console.error("Error loading chat for", otherUsername, err);
+          }
+        }
+
+        // Load chats sequentially (keeps things predictable)
+        for (const user of userList) {
+          await loadChat(user);
         }
 
       } catch (err) {
@@ -120,7 +134,7 @@ export default function ChatPage() {
     }
 
     fetchMessages();
-  }, []);
+  }, []); // run once on mount
 
   // ------------------------------------------------------------------
   // WEBSOCKET CONNECTION
@@ -134,37 +148,44 @@ export default function ChatPage() {
       return;
     }
 
-    const socket = new SockJS(`http://localhost:8080/ws?token=${token}`);
+    // create client with a factory to ensure fresh SockJS on each activation
     const client = new Client({
-      webSocketFactory: () => socket,
-      debug: (str) => console.log('STOMP:', str),
+      webSocketFactory: () => new SockJS(`http://localhost:8080/ws?token=${token}`),
+      debug: (str) => {
+        // keep debug logs but not too spammy
+        // console.log('STOMP:', str);
+      },
 
-      onConnect: () => {
+      onConnect: (frame) => {
         setConnected(true);
 
         // Subscribe to the private user queue for incoming messages
+        // Note: subscription callback uses latest state setter to append incoming messages
         client.subscribe('/user/queue/messages', (msg) => {
-          const cleaned = msg.body.replace(/\0/g, '');
-          const body = JSON.parse(cleaned);
+          try {
+            const cleaned = msg.body ? msg.body.replace(/\0/g, '') : '{}';
+            const body = JSON.parse(cleaned);
 
-          const incomingMsg = {
-            id: body.id || Date.now(),
-            // Determine if the message is from the user or the other party
-            sender: body.senderUsername === username ? "user" : "ai",
-            text: body.content
-          };
+            const incomingMsg = {
+              id: body.id || Date.now(),
+              // Determine if the message is from the user or the other party
+              sender: body.senderUsername === username ? "user" : "ai",
+              text: body.content
+            };
 
-          const other =
-            body.senderUsername === username // If I sent it, the "other" is the recipient
-              ? body.recipientUsername
-              : body.senderUsername; // If someone else sent it, the "other" is the sender
+            const other =
+              body.senderUsername === username // If I sent it, the "other" is the recipient
+                ? body.recipientUsername
+                : body.senderUsername; // If someone else sent it, the "other" is the sender
 
-          // Update the conversation for the determined 'other' user
-          setConversations((prev) => ({
-            ...prev,
-            [other]: [...(prev[other] || []), incomingMsg]
-          }));
-          console.log(conversations)
+            // Update the conversation for the determined 'other' user (append)
+            setConversations((prev) => ({
+              ...prev,
+              [other]: [...(prev[other] || []), incomingMsg]
+            }));
+          } catch (err) {
+            console.error("Failed to parse incoming WS message:", err);
+          }
         });
       },
 
@@ -177,8 +198,16 @@ export default function ChatPage() {
     clientRef.current = client;
     client.activate();
 
-    return () => client.deactivate();
-  }, []); // Empty dependency array means this runs once on mount
+    return () => {
+      try {
+        client.deactivate();
+      } catch (err) {
+        // ignore
+      }
+      clientRef.current = null;
+      setConnected(false);
+    };
+  }, []); // run once
 
   // ------------------------------------------------------------------
   // SEND MESSAGE - Uses decoded user ID and selectedChat for recipient
@@ -186,11 +215,12 @@ export default function ChatPage() {
   const handleSendMessage = useCallback(() => {
     if (!message.trim() || !currentUsername) return;
 
-    // 1. Sender ID is the decoded username from JWT (stored in currentUsername state)
-    // 2. Recipient ID is the currently selected chat (stored in selectedChat state)
+    // If no selected chat, fall back to 'ashray' to match your earlier request
+    const recipient = selectedChat || 'ashray';
+
     const outgoingMsg = {
       senderId: currentUsername,
-      recipientId: selectedChat,
+      recipientId: recipient,
       content: message,
       type: "CHAT"
     };
@@ -198,23 +228,42 @@ export default function ChatPage() {
     console.log("Sending message:", outgoingMsg);
 
     if (clientRef.current && connected) {
-      clientRef.current.publish({
-        destination: "/app/chat.sendMessage",
-        body: JSON.stringify(outgoingMsg)
-      });
+      try {
+        clientRef.current.publish({
+          destination: "/app/chat.sendMessage",
+          body: JSON.stringify(outgoingMsg)
+        });
+      } catch (err) {
+        console.error("Failed to publish message via STOMP:", err);
+      }
+    } else {
+      console.warn("WebSocket not connected — message will still be added to UI optimistically.");
     }
 
     // Optimistically update the UI with the sent message
     setConversations((prev) => ({
       ...prev,
-      [selectedChat]: [
-        ...(prev[selectedChat] || []),
+      [recipient]: [
+        ...(prev[recipient] || []),
         { id: Date.now(), sender: "user", text: message }
       ]
     }));
 
+    // If there was no selectedChat and we defaulted to 'ashray', also ensure contacts includes them
+    setContacts((prev) => {
+      if (!prev.includes(recipient)) {
+        return [...prev, recipient];
+      }
+      return prev;
+    });
+
+    // Set selected chat to recipient if nothing was selected before
+    if (!selectedChat) {
+      setSelectedChat(recipient);
+    }
+
     setMessage('');
-  }, [message, currentUsername, selectedChat, connected]); // Include dependencies
+  }, [message, currentUsername, selectedChat, connected]);
 
   // Auto scroll
   useEffect(() => {
@@ -241,7 +290,6 @@ export default function ChatPage() {
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         <div className="p-4 border-b border-gray-200 flex flex-col gap-2">
-          <h2 className="text-[#437223] font-bold text-lg">Your Username: {currentUsername}</h2>
           <div className="flex justify-between items-center">
             <h2 className="text-[#437223] font-bold text-lg">People</h2>
             <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-[#437223]">
