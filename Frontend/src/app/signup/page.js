@@ -1,9 +1,8 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import NavBar from "@/components/nav/navBar";
 import Link from "next/link";
-import {signup }from "@/api/signup"; 
+import { signup } from "@/api/signup";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -36,8 +35,6 @@ export default function SignupPage() {
     console.debug(`field change: ${name} = ${value}`);
   };
 
-  
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -61,11 +58,8 @@ export default function SignupPage() {
     }
   };
 
-
   return (
     <div className="min-h-screen bg-lighterGray flex flex-col">
-      {/*<NavBar />*/}
-
       <div className="flex flex-1 justify-center items-center">
         <div className="bg-gray-100 rounded-2xl p-10 w-full max-w-md shadow-lg">
           <h1 className="text-4xl font-bold text-nearBlack mb-8 text-center">

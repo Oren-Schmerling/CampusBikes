@@ -24,10 +24,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-json'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'commons-validator:commons-validator:1.9.0'
-  implementation 'com.googlecode.libphonenumber:libphonenumber:9.0.15'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	// In your build.gradle's dependencies { ... } block
 
 	// 1. The JWT API
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
@@ -40,19 +37,22 @@ dependencies {
 
 	// Note: If you are not using Jackson, you can use jjwt-gson or jjwt-orgjson instead.
 	implementation 'org.postgresql:postgresql'
+	implementation 'commons-validator:commons-validator:1.6'
 	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
+	runtimeOnly 'org.postgresql:postgresql'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'commons-validator:commons-validator:1.9.0'
 	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
-
+	implementation 'commons-validator:commons-validator:1.9.0'
 	//made for in memory temp db for testing
 	testImplementation 'com.h2database:h2'
 
 	//WebSocket dependency
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'com.googlecode.libphonenumber:libphonenumber:8.13.15'
 }
 
 tasks.named('test') {

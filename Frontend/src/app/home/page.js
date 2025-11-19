@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import MapCard from '@/components/home/map';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { Bike, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import MapCard from "@/components/home/map";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Bike, ChevronRight } from "lucide-react";
 
 const HomePage = () => {
   const [bikes, setBikes] = useState([]);
@@ -14,13 +14,14 @@ const HomePage = () => {
 
   useEffect(() => {
     // Only run auth check once router is ready
-    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
-    console.log('Checking auth token in HomePage useEffect', token);
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+    console.log("Checking auth token in HomePage useEffect", token);
     if (!token) {
-      console.log('No token found, redirecting to /');
-      router.replace('/');
+      console.log("No token found, redirecting to /");
+      router.replace("/");
     } else {
-      console.log('Token found ✅');
+      console.log("Token found ✅");
       fetchBikes();
     }
 
@@ -30,14 +31,35 @@ const HomePage = () => {
   const fetchBikes = async () => {
     try {
       setLoading(true);
-      const mockBikes = [
-        { id: 1, lat: 42.3870, lng: -72.5270, available: true },
-        { id: 2, lat: 42.3900, lng: -72.5250, available: true },
-        { id: 3, lat: 42.3790, lng: -72.5300, available: false },
-      ];
-      setBikes(mockBikes);
-    } catch (error) {
-      console.error('Error fetching bikes:', error);
+      const res = await fetch("http://localhost:8080/listing/bikes");
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const data = await res.json();
+
+      // Map backend 'bikes' array to frontend-friendly structure
+      const mappedListings = (data.bikes || []).map((item) => ({
+        id: item.id,
+        lat: item.latitude,
+        lng: item.longitude,
+        available: item.status,
+        // imageSrc:
+        //   item.imageUrl ||
+        //   (item.title === "Bike" ? "/bike.jpg" : "/scooter.jpg"),
+        // model: item.model || item.title,
+        // distance: item.distance || 0,
+        // pricePerHour: item.pricePerHour || 0,
+        // seller: item.seller || "Unknown",
+        // rating: item.rating || Math.floor(Math.random() * 5) + 1,
+      }));
+
+      const filteredListings = mappedListings.filter(
+        (bike) => bike.available === "available"
+      );
+
+      setBikes(filteredListings);
+    } catch (err) {
+      console.error("Error fetching bikes:", err);
     } finally {
       setLoading(false);
     }
@@ -66,12 +88,14 @@ const HomePage = () => {
 
       <div className="w-1/2 p-4 flex flex-col gap-4">
         <button
-          onClick={() => router.push('/listings')}
+          onClick={() => router.push("/listings")}
           className="flex-1 bg-white rounded-3xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer group"
         >
           <div className="h-full flex flex-col relative">
             <div className="px-6 py-6 flex items-center justify-between">
-              <h2 className="text-3xl font-bold text-gray-900">Find Bike Listings</h2>
+              <h2 className="text-3xl font-bold text-gray-900">
+                Find Bike Listings
+              </h2>
             </div>
             <div className="flex-1 flex items-center justify-center relative">
               <div className="relative w-full h-64 flex items-center justify-center">
@@ -86,7 +110,9 @@ const HomePage = () => {
 
         <button className="flex-1 bg-white rounded-3xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer group">
           <div className="h-full flex items-center justify-between px-8">
-            <h2 className="text-5xl font-bold text-gray-900">Rent Out Your Bike</h2>
+            <h2 className="text-5xl font-bold text-gray-900">
+              Rent Out Your Bike
+            </h2>
             <Bike size={150} />
           </div>
         </button>

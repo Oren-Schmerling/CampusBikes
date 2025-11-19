@@ -102,8 +102,7 @@ function BikeImage() {
 function HeroSection() {
   return (
     <section className="relative h-180">
-
-      <div className="flex flex-col w-1/2 bg-lighterGray rounded-br-[25%] pl-[100px] pt-[50px] pb-[100px] gap-16 relative z-50">
+      <div className="flex flex-col w-1/2 bg-lighterGray rounded-br-[25%] pl-[100px] py-24 gap-8 relative z-40">
         <BigText />
         <LittleText />
         <JoinButton />

@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS bikes (
     description TEXT,
     location VARCHAR(100),
     price_per_hour DECIMAL(10, 2),
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
     status VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
