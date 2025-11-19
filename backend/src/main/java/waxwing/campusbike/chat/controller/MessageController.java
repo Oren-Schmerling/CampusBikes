@@ -45,4 +45,21 @@ public class MessageController {
 
     return ResponseEntity.ok(response);
   }
+
+  @PostMapping("/getrecipients")
+  public ResponseEntity<Map<String, Object>> returnAllRecipient(
+    @RequestHeader("Authorization") String authHeader) {
+
+    Map<String, Object> response = new HashMap<>();
+
+    String token = authHeader.substring(7).trim();
+    String username = JwtUtil.getUsernameFromToken(token);
+
+    List<String> usernames = messageService.returnAllRecipients(username);
+
+    response.put("message", "Fetched all usernames successfully.");
+    response.put("usernames", usernames);
+
+    return ResponseEntity.ok(response);
+  }
 }

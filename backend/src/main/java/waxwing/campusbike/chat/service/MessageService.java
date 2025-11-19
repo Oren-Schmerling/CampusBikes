@@ -1,9 +1,5 @@
 package waxwing.campusbike.chat.service;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +13,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import waxwing.campusbike.Env;
 import waxwing.campusbike.types.Message;
-import waxwing.campusbike.types.User;
 
 @Service
 public class MessageService {
@@ -79,5 +74,45 @@ public class MessageService {
     }
 
     return messages;
-}
+  }
+
+    public List<String> returnAllRecipients(String username) {
+        List<String> usernames = new ArrayList<>();
+
+        try {
+            // Look up the user ID
+            Long userId = jdbcTemplate.queryForObject(
+                "SELECT id FROM users WHERE username = ?",
+                Long.class,
+                username
+            );
+            
+            // Get all distinct users that this user has communicated with
+            String sql = """
+                SELECT DISTINCT u.username 
+                FROM (
+                    SELECT recipient_id AS user_id 
+                    FROM messages 
+                    WHERE sender_id = ?
+                    UNION
+                    SELECT sender_id AS user_id 
+                    FROM messages 
+                    WHERE recipient_id = ?
+                ) AS message_users
+                JOIN users u ON u.id = message_users.user_id
+            """;
+            
+            usernames = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> rs.getString("username"),
+                userId,
+                userId
+            );
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return usernames;
+    }
 }

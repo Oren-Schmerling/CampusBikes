@@ -10,7 +10,7 @@ const decodeJwt = (token) => {
   try {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
       return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
     }).join(''));
 
@@ -23,7 +23,7 @@ const decodeJwt = (token) => {
 
 export default function ChatPage() {
   const [message, setMessage] = useState('');
-  const [selectedChat, setSelectedChat] = useState('school');
+  const [selectedChat, setSelectedChat] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const chatEndRef = useRef(null);
 
@@ -32,12 +32,11 @@ export default function ChatPage() {
   const [currentUsername, setCurrentUsername] = useState(null); // State to store the decoded current username
 
   const [conversations, setConversations] = useState({
-    school: [],
     Ashray: []
   });
 
   // These are the users you want to chat with. The current user's username is stored in 'currentUsername'.
-  const contacts = ['school', 'Ashray'];
+  const [contacts, setContacts] = useState([]);
 
   // --- Initial Setup: Decode JWT and Fetch Chat History ---
   useEffect(() => {
@@ -53,7 +52,7 @@ export default function ChatPage() {
         window.location.href = '/login';
         return;
       }
-      
+
       // We no longer rely on localStorage.getItem("username") directly for fetching
       // but use the decoded username.
       localStorage.setItem("username", username); // Ensure localStorage has it for the subsequent functions
@@ -63,15 +62,29 @@ export default function ChatPage() {
       window.location.href = '/login';
       return;
     }
-    
+
     async function fetchMessages() {
       try {
         const token = localStorage.getItem("authToken");
-        const username = localStorage.getItem("username"); // Use the updated username from the effect
+        const username = localStorage.getItem("username");
 
         if (!token || !username) {
           return;
         }
+
+        const res = await fetch("http://localhost:8080/message/getrecipients", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+        });
+
+        const data = await res.json();
+        console.log("this is the data", data);
+
+        setContacts(data.usernames);
+        setSelectedChat(data.usernames[0])
 
         async function loadChat(otherUsername) {
           const res = await fetch("http://localhost:8080/message/getall", {
@@ -83,12 +96,11 @@ export default function ChatPage() {
             body: JSON.stringify({ otherUsername })
           });
 
-          const data = await res.json();
+          const chatData = await res.json();
 
-          const formatted = data.messages.map((m) => ({
+          const formatted = chatData.messages.map((m) => ({
             id: m.id,
-            // Compare the senderUsername from the message with the current user's username
-            sender: m.senderUsername === username ? "user" : "ai", 
+            sender: m.senderUsername === username ? "user" : "ai",
             text: m.content
           }));
 
@@ -98,8 +110,9 @@ export default function ChatPage() {
           }));
         }
 
-        await loadChat("school");
-        await loadChat("Ashray");
+        for (const contact of data.usernames) {
+          await loadChat(contact);
+        }
 
       } catch (err) {
         console.error("Error fetching messages:", err);
@@ -137,7 +150,7 @@ export default function ChatPage() {
           const incomingMsg = {
             id: body.id || Date.now(),
             // Determine if the message is from the user or the other party
-            sender: body.senderUsername === username ? "user" : "ai", 
+            sender: body.senderUsername === username ? "user" : "ai",
             text: body.content
           };
 
@@ -151,6 +164,7 @@ export default function ChatPage() {
             ...prev,
             [other]: [...(prev[other] || []), incomingMsg]
           }));
+          console.log(conversations)
         });
       },
 
@@ -175,8 +189,8 @@ export default function ChatPage() {
     // 1. Sender ID is the decoded username from JWT (stored in currentUsername state)
     // 2. Recipient ID is the currently selected chat (stored in selectedChat state)
     const outgoingMsg = {
-      senderId: currentUsername, 
-      recipientId: selectedChat, 
+      senderId: currentUsername,
+      recipientId: selectedChat,
       content: message,
       type: "CHAT"
     };
@@ -212,12 +226,12 @@ export default function ChatPage() {
   // --------------------------------------------------------------
   if (!currentUsername) {
     return (
-        <div className="flex h-screen items-center justify-center bg-white">
-            <p className="text-[#437223]">Loading user data or redirecting...</p>
-        </div>
+      <div className="flex h-screen items-center justify-center bg-white">
+        <p className="text-[#437223]">Loading user data or redirecting...</p>
+      </div>
     );
   }
-  
+
   return (
     <div className="flex h-screen bg-white relative overflow-hidden">
       {/* Sidebar */}
@@ -227,31 +241,31 @@ export default function ChatPage() {
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         <div className="p-4 border-b border-gray-200 flex flex-col gap-2">
-            <h2 className="text-[#437223] font-bold text-lg">Your Username: {currentUsername}</h2>
-            <div className="flex justify-between items-center">
-                <h2 className="text-[#437223] font-bold text-lg">People</h2>
-                <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-[#437223]">
-                    <FiX size={22} />
-                </button>
-            </div>
+          <h2 className="text-[#437223] font-bold text-lg">Your Username: {currentUsername}</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-[#437223] font-bold text-lg">People</h2>
+            <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-[#437223]">
+              <FiX size={22} />
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-col">
           {contacts
-          .filter(person => person !== currentUsername) // Do not list yourself
-          .map((person) => (
-            <button
-              key={person}
-              onClick={() => {
-                setSelectedChat(person);
-                setSidebarOpen(false);
-              }}
-              className={`w-full text-left px-5 py-4 font-medium text-[#437223] border-b border-gray-100 hover:bg-[#e9f3e7]
+            .filter(person => person !== currentUsername) // Do not list yourself
+            .map((person) => (
+              <button
+                key={person}
+                onClick={() => {
+                  setSelectedChat(person);
+                  setSidebarOpen(false);
+                }}
+                className={`w-full text-left px-5 py-4 font-medium text-[#437223] border-b border-gray-100 hover:bg-[#e9f3e7]
               ${selectedChat === person ? 'bg-[#e9f3e7]' : ''}`}
-            >
-              {person}
-            </button>
-          ))}
+              >
+                {person}
+              </button>
+            ))}
         </div>
       </aside>
 
@@ -280,11 +294,10 @@ export default function ChatPage() {
           {(conversations[selectedChat] || []).map((msg, index) => (
             <div key={msg.id || index} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
-                className={`px-4 py-2 rounded-xl max-w-[70%] break-words ${
-                  msg.sender === 'user'
-                    ? 'bg-[#f0f7ef] text-[#437223] rounded-br-none' // Changed: rounded-br-xl -> rounded-br-none
-                    : 'bg-[#437223] text-white rounded-bl-none' // Changed: rounded-bl-xl -> rounded-bl-none
-                }`}
+                className={`px-4 py-2 rounded-xl max-w-[70%] break-words ${msg.sender === 'user'
+                  ? 'bg-[#f0f7ef] text-[#437223] rounded-br-none' // Changed: rounded-br-xl -> rounded-br-none
+                  : 'bg-[#437223] text-white rounded-bl-none' // Changed: rounded-bl-xl -> rounded-bl-none
+                  }`}
               >
                 {msg.text}
               </div>
