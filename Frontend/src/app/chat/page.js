@@ -108,6 +108,7 @@ export default function ChatPage() {
             }
 
             const chatData = await res.json();
+            console.log(chatData)
             const formatted = Array.isArray(chatData.messages) ? chatData.messages.map((m) => ({
               id: m.id,
               text: m.content,
@@ -158,6 +159,7 @@ export default function ChatPage() {
 
       onConnect: (frame) => {
         setConnected(true);
+        console.log(frame)
 
         // Subscribe to the private user queue for incoming messages
         // Note: subscription callback uses latest state setter to append incoming messages
@@ -168,21 +170,23 @@ export default function ChatPage() {
 
             const incomingMsg = {
               id: body.id || Date.now(),
-              // Determine if the message is from the user or the other party
-              sender: body.senderUsername === username ? "user" : "ai",
-              text: body.content
+              text: body.content,
+              sender: body.senderId === username ? "user" : "ai"
             };
 
             const other =
-              body.senderUsername === username // If I sent it, the "other" is the recipient
-                ? body.recipientUsername
-                : body.senderUsername; // If someone else sent it, the "other" is the sender
+              body.senderId === username
+                ? body.recipientId
+                : body.senderId;
 
-            // Update the conversation for the determined 'other' user (append)
-            setConversations((prev) => ({
-              ...prev,
-              [other]: [...(prev[other] || []), incomingMsg]
-            }));
+
+            setConversations((prev) => {
+              const updated = {
+                ...prev,
+                [other]: [...(prev[other] || []), incomingMsg]
+              };
+              return updated;
+            });
           } catch (err) {
             console.error("Failed to parse incoming WS message:", err);
           }
@@ -229,6 +233,7 @@ export default function ChatPage() {
 
     if (clientRef.current && connected) {
       try {
+        console.log(outgoingMsg)
         clientRef.current.publish({
           destination: "/app/chat.sendMessage",
           body: JSON.stringify(outgoingMsg)
