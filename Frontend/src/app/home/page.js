@@ -58,14 +58,14 @@ const HomePage = () => {
         lat: item.latitude,
         lng: item.longitude,
         available: item.status,
-        // imageSrc:
-        //   item.imageUrl ||
-        //   (item.title === "Bike" ? "/bike.jpg" : "/scooter.jpg"),
-        // model: item.model || item.title,
-        // distance: item.distance || 0,
-        // pricePerHour: item.pricePerHour || 0,
-        // seller: item.seller || "Unknown",
-        // rating: item.rating || Math.floor(Math.random() * 5) + 1,
+        imageSrc:
+          item.imageUrl ||
+          (item.title === "Bike" ? "/bike.jpg" : "/scooter.jpg"),
+        model: item.model || item.title,
+        distance: item.distance || 0,
+        pricePerHour: item.pricePerHour || 0,
+        seller: item.seller || "Unknown",
+        rating: item.rating || Math.floor(Math.random() * 5) + 1, //@todo: make this actually pull rating
       }));
 
       const filteredListings = mappedListings.filter(
