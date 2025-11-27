@@ -2,28 +2,19 @@ import { createPortal } from 'react-dom';
 import { Calendar, Clock, DollarSign, X} from 'lucide-react';
 import { useState } from "react";
 import MessageSellerForm from "@/components/listings/messageSellerForm";
+import createRental from '@/api/createRental.js';
 
-const StripePaymentForm = ({ amount, onSuccess, onFailure, onCancel }) => {
+const StripePaymentForm = ({ amount, onCancel, onSubmit }) => {
   // need to implement actual Stripe payment processing here
   const [cardNumber, setCardNumber] = useState('');
   const [expiry, setExpiry] = useState('');
   const [cvc, setCvc] = useState('');
   const [processing, setProcessing] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setProcessing(true);
-    
-    // Simulate payment processing success
-    setTimeout(() => {
-      setProcessing(false);
-      onSuccess();
-    }, 1000);
-
-    // // Simulate payment processing failure
-    // setTimeout(() => {
-    //   setProcessing(false);
-    //   onFailure();
-    // }, 1000);
+    onSubmit && await onSubmit();
+    setProcessing(false);
   };
 
   return (
@@ -100,11 +91,11 @@ const StripePaymentForm = ({ amount, onSuccess, onFailure, onCancel }) => {
 const BookingModal = ({ 
   show, 
   onClose, 
+  listingID,
   title,
   price,
   description,
   seller
-
 }) => {
   // modal state
   const [step, setStep] = useState('details');
@@ -134,11 +125,32 @@ const BookingModal = ({
     setStep('failure');
   }
 
-const handleSendMessage = (message) => {
+ const handleSendMessage = (message) => {
     // temporary alert to simulate message sending
     alert('Message sent to seller!');
     onClose();
-  };
+ };
+
+ const handlePaymentSubmit = async () => {
+    // call on the api to create the booking
+    const payload = {
+      listingID,
+      ...bookingDetails,
+    }
+    console.log('Submitting booking:', payload);
+
+    createRental(payload).then((res) => {
+      if (res.success) {
+        console.log('Booking created:', res.data);
+        // proceed to success step
+        setStep('success');
+      } else {
+        console.error('Booking failed:', res.message);
+        // proceed to failure step
+        setStep('failure');
+      }
+    });
+ }
 
   return createPortal(
     <>
@@ -275,6 +287,7 @@ const handleSendMessage = (message) => {
                     onSuccess={handlePaymentSuccess}
                     onFailure={handlePaymentFailure}
                     onCancel={() => setStep('details')}
+                    onSubmit={handlePaymentSubmit}
                   />
                 
                   {/* change this if we don't use stripe */}

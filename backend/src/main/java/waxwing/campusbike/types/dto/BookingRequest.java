@@ -1,28 +1,62 @@
-package waxwing.campusbike.types.dto;
+// package waxwing.campusbike.types.dto;
+
 // import java.time.LocalDateTime;
+
+// // import com.fasterxml.jackson.annotation.JsonFormat;
+
+// public class BookingRequest {
+
+//     private long bikeID;
+//     private LocalDateTime startTime;
+//     private LocalDateTime endTime;
+
+//     public BookingRequest() {}
+
+//     public long getBikeID() {
+//         return bikeID;
+//     }
+
+//     public void setBikeID(long bikeID) {
+//         this.bikeID = bikeID;
+//     }
+
+//     public LocalDateTime getStartTime() {
+//         return startTime;
+//     }
+
+//     public void setStartTime(LocalDateTime startTime) {
+//         this.startTime = startTime;
+//     }
+
+//     public LocalDateTime getEndTime() {
+//         return endTime;
+//     }
+
+//     public void setEndTime(LocalDateTime endTime) {
+//         this.endTime = endTime;
+//     }
+// }
+
+
+package waxwing.campusbike.types.dto;
+
+import java.time.LocalDateTime;
+
+// import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class BookingRequest {
 
-    private long renterID;
     private long bikeID;
     private String startTime;
     private String endTime;
 
     public BookingRequest() {}
 
-    public long getRenterID() {
-        return renterID;
-    }
-
-    public void setRenterID(int renterID) {
-        this.renterID = renterID;
-    }
-
     public long getBikeID() {
         return bikeID;
     }
-    
-    public void setBikeID(int bikeID) {
+
+    public void setBikeID(long bikeID) {
         this.bikeID = bikeID;
     }
 

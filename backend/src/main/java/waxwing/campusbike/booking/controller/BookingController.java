@@ -26,25 +26,31 @@ public class BookingController {
 
     @PostMapping("/rent")
     public ResponseEntity<Map<String, Object>> rentBike(
-        @RequestBody BookingRequest request,
+        @RequestBody BookingRequest request, 
         @RequestHeader("Authorization") String authHeader) {
 
         Map<String, Object> response = new HashMap<>();
 
-        String token = authHeader.substring(7).trim();
-        String username = JwtUtil.getUsernameFromToken(token);
+        System.out.println("Received request: " + request);
 
-        int statusCode = bookingService.rentBike(username, request);
+        // String token = authHeader.substring(7).trim();
+        // String username = JwtUtil.getUsernameFromToken(token);
 
-        if (statusCode != 200) {
-            response.put("message", "Bike rental failed.");
-            response.put("statusCode", statusCode);
-            return ResponseEntity.badRequest().body(response);
-        } else {
-            response.put("message", "Bike rental successful.");
-            response.put("statusCode", statusCode);
-            return ResponseEntity.ok(response);
-        }
+        // int statusCode = bookingService.rentBike(username, request);
+
+        // if (statusCode != 200) {
+        //     response.put("message", "Bike rental failed.");
+        //     response.put("statusCode", statusCode);
+        //     return ResponseEntity.badRequest().body(response);
+        // } else {
+        //     response.put("message", "Bike rental successful.");
+        //     response.put("statusCode", statusCode);
+        //     return ResponseEntity.ok(response);
+        // }
+
+        response.put("message", "Bike rental successful.");
+        response.put("status", 200);
+        return ResponseEntity.ok(response);
     }
     
 }

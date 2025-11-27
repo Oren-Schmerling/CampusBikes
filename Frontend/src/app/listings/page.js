@@ -95,7 +95,7 @@ function LeftBar({
           <input
             type="range"
             min="0"
-            max="5"
+            max="100"
             step="0.1"
             value={distance}
             onChange={(e) => setDistance(Number(e.target.value))}
@@ -181,6 +181,7 @@ export default function ListingsPage() {
 
   useEffect(() => {
     fetchListings(setListings);
+    console.log("Fetched listings:", filtered); // debug log
     const saved = localStorage.getItem("userLocation");
     if (saved) {
       setUserLocation(JSON.parse(saved));
@@ -315,7 +316,7 @@ export default function ListingsPage() {
         */}
         <main className="flex-1 overflow-y-auto">
           <div className="p-6 flex justify-center">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 justify-items-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6justify-items-center">
               {/* Render listing cards here based on fetched bikes,
               need to figure out proper fields to pass in based on backend data
               */}
@@ -333,7 +334,11 @@ export default function ListingsPage() {
                   description={listing.description}
                   onMessageSeller={handleMessageSeller}
                   onBook={handleBook}
-                  onClick={() => setSelectedListing(listing)}
+                  onClick={() => {
+                    console.log("Selected listing:", listing);
+                    setSelectedListing(listing);
+                  }}
+                  id={listing.id}
                 />
               ))}
             </div>
@@ -364,7 +369,6 @@ export default function ListingsPage() {
                       Book
                     </button>
 
-                    {/* A little goofy, because this will show up on top of the details popup, may want to change */}
                     {showBookingModal && (
                       <BookingModal
                         show={showBookingModal}
@@ -372,6 +376,7 @@ export default function ListingsPage() {
                           handleCloseBookingModal();
                           setSelectedListing(null);
                         }}
+                        listingID={selectedListing.id}
                         title={selectedListing.model}
                         price={selectedListing.pricePerHour}
                         description={selectedListing.description}

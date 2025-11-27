@@ -165,6 +165,7 @@ const ListingCard = ({
             <BookingModal
               show={showBookModal}
               onClose={handleCloseBookModal}
+              listingID={id}
               title={model}
               price={pricePerHour}
               description={description}

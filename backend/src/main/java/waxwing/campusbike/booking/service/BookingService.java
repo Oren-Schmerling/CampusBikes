@@ -13,6 +13,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import waxwing.campusbike.Env;
 
 import waxwing.campusbike.types.Rental;
+import waxwing.campusbike.types.dto.BookingRequest;
+import waxwing.campusbike.types.User;
+import java.sql.ResultSet;
 
 @Service
 public class BookingService {
@@ -28,36 +31,71 @@ private final Env env;
         this.objectMapper = new ObjectMapper();
   }
 
-  public int rentBike(String username, Object request){
-    // TODO: implement bike rental logic
+  public int rentBike(String username, BookingRequest request){
+    // // TODO: implement bike rental logic
+    // User user = getUser(username);
 
-    Rental newBooking = objectMapper.convertValue(request, Rental.class);
-    int code = uploadBooking(newBooking);
-    if (code == 1){
-        return 200; // OK
-    } else {
-        return 500; // Internal Server Error
-    }
+    // Rental newBooking = new Rental(
+    //     user.getId(),
+    //     request.getBikeID(),
+    //     request.getStartTime(),
+    //     request.getEndTime()
+    // );
+
+    // int code = uploadBooking(newBooking);
+    // if (code == 1){
+    //     return 200; // OK
+    // } else {
+    //     return 409;
+    // }
+    return 200;
   }
 
   private int uploadBooking(Rental booking) {
     // TODO: implement booking upload logic
-     String sql = "INSERT INTO rentals (renter_id, bike_id, start_time, end_time) VALUES (?, ?, ?, ?)";
+    return 1;
+    //  String sql = "INSERT INTO rentals (renter_id, bike_id, start_time, end_time) VALUES (?, ?, ?, ?)";
+
+    // try (Connection conn = dataSource.getConnection();
+    //      PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+    //     stmt.setLong(1, booking.getRenterId());
+    //     stmt.setLong(2, booking.getBikeId());
+    //     stmt.setObject(3, booking.getStartTime());
+    //     stmt.setObject(4, booking.getEndTime());
+
+    //     int rowsAffected = stmt.executeUpdate();
+
+    //     return rowsAffected; // usually 1 if successful
+    // } catch (SQLException e) {
+    //     e.printStackTrace();
+    //     return -1;
+    // }
+  }
+
+    private User getUser(String username) {
+    String checkSql = "SELECT * FROM users WHERE username = ?";
 
     try (Connection conn = dataSource.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql)) {
+         PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
 
-        stmt.setLong(1, booking.getRenterId());
-        stmt.setLong(2, booking.getBikeId());
-        stmt.setObject(3, booking.getStartTime());
-        stmt.setObject(4, booking.getEndTime());
+        checkStmt.setString(1, username);
+        ResultSet rs = checkStmt.executeQuery();
 
-        int rowsAffected = stmt.executeUpdate();
+        if (rs.next()) {
+            return new User(
+                rs.getLong("id"),
+                rs.getString("username"),
+                rs.getString("email"),
+                rs.getString("phone")
+            );
+        } else {
+            return null;
+        }
 
-        return rowsAffected; // usually 1 if success
     } catch (SQLException e) {
         e.printStackTrace();
-        return -1;
+        return null;
     }
   }
 }
