@@ -33,24 +33,20 @@ public class BookingController {
 
         System.out.println("Received request: " + request);
 
-        // String token = authHeader.substring(7).trim();
-        // String username = JwtUtil.getUsernameFromToken(token);
+        String token = authHeader.substring(7).trim();
+        String username = JwtUtil.getUsernameFromToken(token);
 
-        // int statusCode = bookingService.rentBike(username, request);
+        int statusCode = bookingService.rentBike(username, request);
 
-        // if (statusCode != 200) {
-        //     response.put("message", "Bike rental failed.");
-        //     response.put("statusCode", statusCode);
-        //     return ResponseEntity.badRequest().body(response);
-        // } else {
-        //     response.put("message", "Bike rental successful.");
-        //     response.put("statusCode", statusCode);
-        //     return ResponseEntity.ok(response);
-        // }
-
-        response.put("message", "Bike rental successful.");
-        response.put("status", 200);
-        return ResponseEntity.ok(response);
+        if (statusCode != 200) {
+            response.put("message", "Bike rental failed.");
+            response.put("statusCode", statusCode);
+            return ResponseEntity.badRequest().body(response);
+        } else {
+            response.put("message", "Bike rental successful.");
+            response.put("statusCode", statusCode);
+            return ResponseEntity.ok(response);
+        }
     }
     
 }

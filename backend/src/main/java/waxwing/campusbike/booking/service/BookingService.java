@@ -17,6 +17,11 @@ import waxwing.campusbike.types.dto.BookingRequest;
 import waxwing.campusbike.types.User;
 import java.sql.ResultSet;
 
+// to convert string to localdatetime
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
 @Service
 public class BookingService {
     
@@ -33,47 +38,55 @@ private final Env env;
 
   public int rentBike(String username, BookingRequest request){
     // // TODO: implement bike rental logic
-    // User user = getUser(username);
+    User user = getUser(username);
 
-    // Rental newBooking = new Rental(
-    //     user.getId(),
-    //     request.getBikeID(),
-    //     request.getStartTime(),
-    //     request.getEndTime()
-    // );
+    // convert startTime and endTime from String to LocalDateTime
+    String startTime = request.getStartTime();
+    String endTime = request.getEndTime();
 
-    // int code = uploadBooking(newBooking);
-    // if (code == 1){
-    //     return 200; // OK
-    // } else {
-    //     return 409;
-    // }
-    return 200;
+    Instant startInstant = Instant.parse(startTime);
+    LocalDateTime localStartTime = LocalDateTime.ofInstant(startInstant, ZoneId.systemDefault());
+
+    Instant endInstant = Instant.parse(endTime);
+    LocalDateTime localEndTime = LocalDateTime.ofInstant(endInstant, ZoneId.systemDefault());
+
+    Rental newBooking = new Rental(
+        user.getId(),
+        request.getBikeID(),
+        localStartTime,
+        localEndTime
+    );
+
+    int code = uploadBooking(newBooking);
+    if (code == 1){
+        return 200; // OK
+    } else {
+        return 409; // return conflict if booking fails
+    }
   }
 
   private int uploadBooking(Rental booking) {
     // TODO: implement booking upload logic
-    return 1;
-    //  String sql = "INSERT INTO rentals (renter_id, bike_id, start_time, end_time) VALUES (?, ?, ?, ?)";
+     String sql = "INSERT INTO rentals (renter_id, bike_id, start_time, end_time, status) VALUES (?, ?, ?, ?, 'booked')";
 
-    // try (Connection conn = dataSource.getConnection();
-    //      PreparedStatement stmt = conn.prepareStatement(sql)) {
+    try (Connection conn = dataSource.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-    //     stmt.setLong(1, booking.getRenterId());
-    //     stmt.setLong(2, booking.getBikeId());
-    //     stmt.setObject(3, booking.getStartTime());
-    //     stmt.setObject(4, booking.getEndTime());
+        stmt.setLong(1, booking.getRenterId());
+        stmt.setLong(2, booking.getBikeId());
+        stmt.setObject(3, booking.getStartTime());
+        stmt.setObject(4, booking.getEndTime());
 
-    //     int rowsAffected = stmt.executeUpdate();
+        int rowsAffected = stmt.executeUpdate();
 
-    //     return rowsAffected; // usually 1 if successful
-    // } catch (SQLException e) {
-    //     e.printStackTrace();
-    //     return -1;
-    // }
+        return rowsAffected; // usually 1 if successful
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return -1;
+    }
   }
 
-    private User getUser(String username) {
+  private User getUser(String username) {
     String checkSql = "SELECT * FROM users WHERE username = ?";
 
     try (Connection conn = dataSource.getConnection();

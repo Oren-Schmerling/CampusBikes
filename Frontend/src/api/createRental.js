@@ -45,7 +45,7 @@ export default async function createRental(endpointOrData, maybeData) {
         }
 
         // debug to see data
-        console.log("Creating rental with data:", data);
+        // console.log("Creating rental with data:", data);
 
         const res = await fetch(url, {
             method: "POST",
@@ -63,8 +63,6 @@ export default async function createRental(endpointOrData, maybeData) {
         } catch {
             parsed = { message: text };
         }
-
-        console.log("Response:", parsed);
 
         if (!res.ok) {
             const msg =
