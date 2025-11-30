@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import waxwing.campusbike.Env;
-
+import waxwing.campusbike.types.Bike;
 import waxwing.campusbike.types.Rental;
 import waxwing.campusbike.types.dto.BookingRequest;
 import waxwing.campusbike.types.User;
@@ -21,6 +21,8 @@ import java.sql.ResultSet;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class BookingService {
@@ -111,4 +113,34 @@ private final Env env;
         return null;
     }
   }
+
+    public List<Rental> returnAllBookings() {
+        String checkSql = "SELECT * FROM rentals";
+        List<Rental> bookings = new ArrayList<>();
+
+        try (Connection conn = dataSource.getConnection();
+            PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+
+            ResultSet rs = checkStmt.executeQuery();
+
+            while (rs.next()) {
+                Rental booking = new Rental(
+                    rs.getLong("renter_id"),
+                    rs.getLong("bike_id"),
+                    rs.getTimestamp("start_time").toLocalDateTime(),
+                    rs.getTimestamp("end_time").toLocalDateTime()
+                );
+                booking.setId(rs.getLong("id"));
+                
+                bookings.add(booking);
+            }
+
+            return bookings;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new ArrayList<>(); 
+        }
+    }
+
 }

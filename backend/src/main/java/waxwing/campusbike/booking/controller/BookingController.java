@@ -2,14 +2,18 @@ package waxwing.campusbike.booking.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import waxwing.campusbike.auth.util.JwtUtil;
+import waxwing.campusbike.types.Bike;
+import waxwing.campusbike.types.Rental;
 import waxwing.campusbike.types.dto.BookingRequest;
 import waxwing.campusbike.booking.service.BookingService;
 
@@ -48,5 +52,18 @@ public class BookingController {
             return ResponseEntity.ok(response);
         }
     }
-    
+
+    @GetMapping("/rentals")
+    public ResponseEntity<Map<String, Object>> returnAllBookings() {
+        Map<String, Object> response = new HashMap<>();
+
+        List<Rental> bookings = bookingService.returnAllBookings();
+
+        response.put("message", "Fetched all bookings successfully.");
+        response.put("bookings", bookings);
+        response.put("count", bookings.size());
+
+        return ResponseEntity.ok(response);
+    }
+
 }
