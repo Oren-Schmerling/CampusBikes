@@ -5,6 +5,7 @@ import ListingCard from "@/components/listings/listingCard";
 import MapCard from "@/components/home/map";
 import { useRouter } from "next/navigation";
 import { CreateListingModal } from "@/components/listings/createListingModal";
+import haversineDistanceMiles from "@/components/listings/haversineDistance";
 
 const HomePage = () => {
   const [bikes, setBikes] = useState([]);
@@ -13,6 +14,11 @@ const HomePage = () => {
   const router = useRouter();
   const [createModalIsOpen, setCreateModalIsOpen] = useState(false);
   const [selectedListing, setSelectedListingSlave] = useState("");
+  const [userLocation, setUserLocation] = useState(null);
+  
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+  const url = `${BASE_URL}/auth/verify`;
+  const [loggedIn, setLoggedIn] = useState(null);
 
   const scrollToCard = (id) => {
     const cardElement = document.getElementById(id);
@@ -28,22 +34,69 @@ const HomePage = () => {
   };
 
   useEffect(() => {
-    // Only run auth check once router is ready
-    const token =
-      typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
-    console.log("Checking auth token in HomePage useEffect", token);
-    if (!token) {
-      console.log("No token found, redirecting to /");
-      router.replace("/");
-    } else {
-      console.log("Token found ✅");
-      fetchBikes();
-    }
+    const init = async () => {
+      // Get user location
+      let loc = null;
+      const saved = localStorage.getItem("userLocation");
 
-    setCheckingAuth(false);
-  }, [router]);
+      if (saved) {
+        loc = JSON.parse(saved);
+      } else {
+        loc = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              const { latitude, longitude } = pos.coords;
+              const newLoc = { lat: latitude, lng: longitude };
+              localStorage.setItem("userLocation", JSON.stringify(newLoc));
+              resolve(newLoc);
+            },
+            (err) => reject(err)
+          );
+        }).catch((err) => {
+          console.warn("Geolocation error:", err);
+          alert("We need your location to filter by distance.");
+          return null;
+        });
+      }
+      setUserLocation(loc);
 
-  const fetchBikes = async () => {
+      // Auth check
+
+      const checkAuth = async () => {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          setLoggedIn(false);
+          return;
+        }  
+        try {
+          const res = await fetch(url, {
+            method: "GET",
+            headers: { "Authorization": `Bearer ${token}` },
+          });
+          if (!res.ok) {
+            setLoggedIn(false);
+            return;
+          }
+          const data = await res.json();
+          console.log(`home page found token with status: ${data.valid}`);
+          setLoggedIn(data.valid); // true or false
+        } catch (err) {
+          console.error("Auth verification error:", err);
+          setLoggedIn(false);
+        }
+      }
+      checkAuth();
+      setCheckingAuth(false);
+
+      // Fetch bikes using location
+      await fetchBikes(loc);
+    };
+
+    init();
+
+  }, [url]);
+
+  const fetchBikes = async (loc) => {
     try {
       setLoading(true);
       const res = await fetch("http://localhost:8080/listing/bikes");
@@ -62,11 +115,18 @@ const HomePage = () => {
           item.imageUrl ||
           (item.title === "Bike" ? "/bike.jpg" : "/scooter.jpg"),
         model: item.model || item.title,
-        distance: item.distance || 0,
+        distance: loc
+          ? haversineDistanceMiles(loc.lat, loc.lng, item.latitude, item.longitude)
+          : null,
         pricePerHour: item.pricePerHour || 0,
         seller: item.seller || "Unknown",
         rating: item.rating || Math.floor(Math.random() * 5) + 1, //@todo: make this actually pull rating
-      }));
+      }))
+      .sort((a, b) => {
+        if (a.distance === null) return 1;
+        if (b.distance === null) return -1;
+        return a.distance - b.distance
+      });
 
       const filteredListings = mappedListings.filter(
         (bike) => bike.available === "available"
