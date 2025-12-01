@@ -46,7 +46,13 @@ public class BookingController {
         int statusCode = bookingService.rentBike(username, request);
 
         if (statusCode != 200) {
-            response.put("message", "Bike rental failed.");
+            if (statusCode == 409) {
+                response.put("conflict", true);
+                response.put("message", "Sorry, this listing was just booked for the selected time!");
+                
+            } else {
+                response.put("message", "Bike rental failed.");
+            }
             response.put("statusCode", statusCode);
             return ResponseEntity.badRequest().body(response);
         } else {
