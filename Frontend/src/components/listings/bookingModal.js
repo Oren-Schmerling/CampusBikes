@@ -7,24 +7,24 @@ import createRental from '@/api/createRental.js';
 // Helper function to check if time range conflicts with bookings
 const hasConflict = (startDate, startTime, duration, bookings) => {
   if (!startDate || !startTime) return false;
-  
+
   const userStart = new Date(`${startDate}T${startTime}`);
   const userEnd = new Date(userStart.getTime() + duration * 60 * 60 * 1000);
 
   // console.log('Checking conflict for:', userStart, 'to', userEnd);
-  
+
   return bookings.some(booking => {
     const bookingStart = new Date(booking.startTime);
     const bookingEnd = new Date(booking.endTime);
 
     // console.log('Comparing with booking:', bookingStart, 'to', bookingEnd);
-    
+
     // // Check if ranges overlap
     // return userStart < bookingEnd && userEnd > bookingStart;
     // check if user start and end are within booking start and end
     return (userStart >= bookingStart && userStart <= bookingEnd) ||
-           (userEnd >= bookingStart && userEnd <= bookingEnd) ||
-           (userStart <= bookingStart && userEnd >= bookingEnd);
+      (userEnd >= bookingStart && userEnd <= bookingEnd) ||
+      (userStart <= bookingStart && userEnd >= bookingEnd);
   });
 };
 
@@ -111,9 +111,9 @@ const StripePaymentForm = ({ amount, onCancel, onSubmit }) => {
   );
 };
 
-const BookingModal = ({ 
-  show, 
-  onClose, 
+const BookingModal = ({
+  show,
+  onClose,
   listingID,
   title,
   price,
@@ -186,8 +186,8 @@ const BookingModal = ({
     setStep('failure');
   };
 
-  const handleSendMessage = (message) => {
-    alert('Message sent to seller!');
+  const handleSendMessage = (id, message) => {
+    alert('This one wont work!');
     onClose();
   };
 
@@ -200,7 +200,7 @@ const BookingModal = ({
 
     try {
       const res = await createRental(payload);
-    
+
       if (res.success) {
         setStep('success');
       } else {
@@ -216,154 +216,154 @@ const BookingModal = ({
 
   return createPortal(
     <>
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
         onClick={(e) => {
           e.stopPropagation();
           onClose();
         }}
       />
-      
-      <div 
+
+      <div
         className="fixed inset-0 z-50 flex items-center justify-center p-4"
         onClick={(e) => {
           e.stopPropagation();
           onClose();
         }}
       >
-        <div 
+        <div
           className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
 
-          <button 
+          <button
             onClick={onClose}
             className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition"
           >
             <X size={24} />
           </button>
-          
+
           <h2 className="text-2xl font-semibold mb-4">Booking: {title}</h2>
 
           {step === 'details' && (
-              <div className="space-y-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-center gap-3 mb-2">
-                    <DollarSign className="text-green-600" size={20} />
-                    <span className="font-semibold">{price} / hour</span>
-                  </div>
-                  <p className="text-sm text-gray-600 max-h-24 overflow-y-auto">{description}</p>
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <DollarSign className="text-green-600" size={20} />
+                  <span className="font-semibold">{price} / hour</span>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Calendar className="inline mr-2" size={16} />
-                    Start Date
-                  </label>
-                  <input
-                    type="date"
-                    value={bookingDetails.startDate}
-                    onChange={(e) => setBookingDetails({ ...bookingDetails, startDate: e.target.value })}
-                    min={getTodayLocalDate()}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" 
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Clock className="inline mr-2" size={16} />
-                    Start Time
-                  </label>
-                  <input
-                    type="time"
-                    value={bookingDetails.startTime}
-                    onChange={(e) => setBookingDetails({ ...bookingDetails, startTime: e.target.value })}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" 
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Duration (hours)
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={bookingDetails.duration}
-                    onChange={(e) => setBookingDetails({ ...bookingDetails, duration: parseInt(e.target.value) })}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" 
-                  />
-                </div>
-
-                {hasTimeConflict && (
-                  <div className="bg-red-50 p-4 rounded-lg border border-red-200 flex gap-3">
-                    <AlertCircle className="text-red-600 flex-shrink-0" size={20} />
-                    <div>
-                      <p className="font-semibold text-red-900 text-sm">Time Conflict</p>
-                      <p className="text-red-800 text-sm">This bike is already booked during your selected time. Please choose a different time or duration.</p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold text-gray-700">Total:</span>
-                    <span className="text-2xl font-bold text-waxwingGreen">
-                      ${calculateTotal().toFixed(2)}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 mt-2">
-                    {bookingDetails.duration} hour{bookingDetails.duration > 1 ? 's' : ''} × ${price}/hour
-                  </p>
-                </div>
-
-                <div className="flex gap-3">
-                    <button
-                    onClick={handleMessageSeller}
-                    className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-100 transition cursor-pointer"
-                    >
-                        Negotiate with Seller
-                    </button>
-                    <button
-                        onClick={() => setStep('payment')}
-                        disabled={!bookingDetails.startDate || !bookingDetails.startTime || hasTimeConflict}
-                        className="flex-1 py-3 bg-waxwingGreen text-white rounded-lg font-medium hover:bg-waxwingLightGreen transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    >
-                        Proceed to Payment
-                    </button>
-                </div>
-
+                <p className="text-sm text-gray-600 max-h-24 overflow-y-auto">{description}</p>
               </div>
-          )} 
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Calendar className="inline mr-2" size={16} />
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={bookingDetails.startDate}
+                  onChange={(e) => setBookingDetails({ ...bookingDetails, startDate: e.target.value })}
+                  min={getTodayLocalDate()}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Clock className="inline mr-2" size={16} />
+                  Start Time
+                </label>
+                <input
+                  type="time"
+                  value={bookingDetails.startTime}
+                  onChange={(e) => setBookingDetails({ ...bookingDetails, startTime: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Duration (hours)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={bookingDetails.duration}
+                  onChange={(e) => setBookingDetails({ ...bookingDetails, duration: parseInt(e.target.value) })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              {hasTimeConflict && (
+                <div className="bg-red-50 p-4 rounded-lg border border-red-200 flex gap-3">
+                  <AlertCircle className="text-red-600 flex-shrink-0" size={20} />
+                  <div>
+                    <p className="font-semibold text-red-900 text-sm">Time Conflict</p>
+                    <p className="text-red-800 text-sm">This bike is already booked during your selected time. Please choose a different time or duration.</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold text-gray-700">Total:</span>
+                  <span className="text-2xl font-bold text-waxwingGreen">
+                    ${calculateTotal().toFixed(2)}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600 mt-2">
+                  {bookingDetails.duration} hour{bookingDetails.duration > 1 ? 's' : ''} × ${price}/hour
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleMessageSeller}
+                  className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-100 transition cursor-pointer"
+                >
+                  Negotiate with Seller
+                </button>
+                <button
+                  onClick={() => setStep('payment')}
+                  disabled={!bookingDetails.startDate || !bookingDetails.startTime || hasTimeConflict}
+                  className="flex-1 py-3 bg-waxwingGreen text-white rounded-lg font-medium hover:bg-waxwingLightGreen transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  Proceed to Payment
+                </button>
+              </div>
+
+            </div>
+          )}
 
           {step === "payment" && (
-              <div>
-                <div className="space-y-6">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-semibold mb-2">Summary</h3>
-                    <div className="space-y-1 text-sm text-gray-600">
-                      <p>Start Date: {bookingDetails.startDate}</p>
-                      <p>Start Time: {bookingDetails.startTime}</p>
-                      <p>Duration: {bookingDetails.duration} hour{bookingDetails.duration > 1 ? 's' : ''}</p>
-                    </div>
+            <div>
+              <div className="space-y-6">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-semibold mb-2">Summary</h3>
+                  <div className="space-y-1 text-sm text-gray-600">
+                    <p>Start Date: {bookingDetails.startDate}</p>
+                    <p>Start Time: {bookingDetails.startTime}</p>
+                    <p>Duration: {bookingDetails.duration} hour{bookingDetails.duration > 1 ? 's' : ''}</p>
                   </div>
+                </div>
 
-                  <StripePaymentForm
-                    amount={calculateTotal()}
-                    onSuccess={handlePaymentSuccess}
-                    onFailure={handlePaymentFailure}
-                    onCancel={() => setStep('details')}
-                    onSubmit={handlePaymentSubmit}
-                  />
-                
-                  <p className="text-xs text-gray-500 text-center">
-                    Payments are processed through Stripe
-                  </p>
+                <StripePaymentForm
+                  amount={calculateTotal()}
+                  onSuccess={handlePaymentSuccess}
+                  onFailure={handlePaymentFailure}
+                  onCancel={() => setStep('details')}
+                  onSubmit={handlePaymentSubmit}
+                />
+
+                <p className="text-xs text-gray-500 text-center">
+                  Payments are processed through Stripe
+                </p>
               </div>
             </div>
           )}
 
-        {step === 'success' && (
+          {step === 'success' && (
             <div className="text-center py-8">
               <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -414,6 +414,7 @@ const BookingModal = ({
 
           {step === 'message' && (
             <MessageSellerForm
+              id={listingID}
               seller={seller}
               title={title}
               onSend={handleSendMessage}

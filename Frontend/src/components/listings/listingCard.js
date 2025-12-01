@@ -94,7 +94,7 @@ const ListingCard = ({
                   pricePerHour > 5 * j
                     ? "text-waxwingLightGreen"
                     : "text-gray-300"
-                }`}
+                  }`}
               >
                 $
               </span>
@@ -115,9 +115,8 @@ const ListingCard = ({
             {Array.from({ length: 5 }).map((_, j) => (
               <span
                 key={j}
-                className={`text-lg leading-none ${
-                  j < rating ? "text-waxwingLightGreen" : "text-gray-300"
-                }`}
+                className={`text-lg leading-none ${j < rating ? "text-waxwingLightGreen" : "text-gray-300"
+                  }`}
               >
                 ★
               </span>
@@ -139,12 +138,13 @@ const ListingCard = ({
 
           {showMessageForm && (
             <MessageSellerForm
+              id={id}
               seller={seller}
               title={model}
-              onSend={(message) => {
-                onMessageSeller(message);
+              onSend={(id, message) => {
+                onMessageSeller(id, message);
                 // temporary alert to simulate message sending
-                alert("Message sent to seller!");
+                //alert("Message sent to seller!");
                 handleCloseMessageForm();
               }}
               onBack={handleCloseMessageForm}

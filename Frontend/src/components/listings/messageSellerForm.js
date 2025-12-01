@@ -4,13 +4,14 @@ import { useState } from "react";
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
-const MessageSellerForm = ({ seller, title, onSend, onBack }) => {
+const MessageSellerForm = ({ id, seller, title, onSend, onBack }) => {
   const [message, setMessage] = useState('');
 
   const handleSubmit = (e) => {
     e.stopPropagation();
     if (message.trim()) {
-      onSend(message);
+      console.log("Sending message to seller:", id, "Message:", message);
+      onSend(id, message);
       setMessage('');
     }
   };
@@ -28,11 +29,11 @@ const MessageSellerForm = ({ seller, title, onSend, onBack }) => {
   };
 
   return createPortal(
-    <div 
+    <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
       onClick={handleBackdropClick}
     >
-      <div 
+      <div
         className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 relative"
         onClick={(e) => e.stopPropagation()}
       >

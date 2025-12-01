@@ -61,6 +61,7 @@ const NavBar = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
+      console.log("Checking auth status in NavBar...");
       const token = localStorage.getItem("authToken");
       if (!token) {
         setLoggedIn(false);
@@ -88,6 +89,9 @@ const NavBar = () => {
       }
     }
     checkAuth();
+
+    window.addEventListener("authChange", checkAuth);
+    return () => window.removeEventListener("authChange", checkAuth);
   }, [url]);
 
   if (!loggedIn) {
@@ -115,6 +119,7 @@ const NavBar = () => {
       <div className="flex w-full justify-between ml-20">
         {AltNavItem("homeIcon.svg", "Home Page", "/home")}
         {AltNavItem("plusCircle.svg", "Listings", "/listings")}
+        {AltNavItem("chat.svg", "Messages", "/chat")}
         {AltNavItem("accountCircle.svg", "Account", "/contact")}
       </div>
     </div>

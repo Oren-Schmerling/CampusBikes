@@ -118,11 +118,11 @@ const HomePage = () => {
           model: item.model || item.title,
           distance: loc
             ? haversineDistanceMiles(
-                loc.lat,
-                loc.lng,
-                item.latitude,
-                item.longitude
-              )
+              loc.lat,
+              loc.lng,
+              item.latitude,
+              item.longitude
+            )
             : null,
           pricePerHour: item.pricePerHour || 0,
           seller: item.seller || "Unknown",
@@ -168,7 +168,6 @@ const HomePage = () => {
           {bikes.map((listing) => {
             if (listing.id === selectedListing) {
             }
-
             return (
               <ListingCard
                 key={listing.id}

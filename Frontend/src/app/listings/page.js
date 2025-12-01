@@ -62,6 +62,7 @@ export default function ListingsPage() {
     }
   }, []);
 
+
   const filtered = listings
     .map((item) => {
       if (!userLocation) return { ...item, distance: null };
@@ -100,6 +101,12 @@ export default function ListingsPage() {
       console.error("Error searching:", err);
     }
   };
+
+  useEffect(() => {
+    if (filtered) {
+      console.log("Fetched listings:", filtered);
+    }
+  }, [filtered]);
 
   return (
     <div className="flex h-screen bg-white">
