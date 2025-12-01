@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import waxwing.campusbike.Env;
 import waxwing.campusbike.types.Bike;
 import waxwing.campusbike.types.Rental;
+import waxwing.campusbike.types.dto.BookingAvailability;
 import waxwing.campusbike.types.dto.BookingRequest;
 import waxwing.campusbike.types.User;
 import java.sql.ResultSet;
@@ -27,7 +28,7 @@ import java.util.List;
 @Service
 public class BookingService {
     
-private final Env env;
+  private final Env env;
   private final ObjectMapper objectMapper;
 
   @Autowired
@@ -143,4 +144,28 @@ private final Env env;
         }
     }
 
+  // fetch bookings by listing ID
+  public java.util.List<BookingAvailability> getBookingsByListingID(Long listingID) {
+    String sql = "SELECT start_time, end_time FROM rentals WHERE bike_id = ?";
+    java.util.List<BookingAvailability> bookings = new java.util.ArrayList<>();
+
+    try (Connection conn = dataSource.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setLong(1, listingID);
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next()) {
+            LocalDateTime startTime = rs.getObject("start_time", LocalDateTime.class);
+            LocalDateTime endTime = rs.getObject("end_time", LocalDateTime.class);
+            bookings.add(new BookingAvailability(startTime, endTime));
+        }
+
+        return bookings;
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+        throw new RuntimeException("Error fetching bookings", e);
+    }
+  }
 }
