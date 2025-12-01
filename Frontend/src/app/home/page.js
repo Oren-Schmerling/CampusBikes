@@ -1,16 +1,31 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import ListingCard from "@/components/listings/listingCard";
 import MapCard from "@/components/home/map";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { Bike, ChevronRight } from "lucide-react";
+import { CreateListingModal } from "@/components/listings/createListingModal";
 
 const HomePage = () => {
   const [bikes, setBikes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const router = useRouter();
+  const [createModalIsOpen, setCreateModalIsOpen] = useState(false);
+  const [selectedListing, setSelectedListingSlave] = useState("");
+
+  const scrollToCard = (id) => {
+    const cardElement = document.getElementById(id);
+    cardElement.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  };
+
+  const setSelectedListing = (listing) => {
+    setSelectedListingSlave(listing);
+    scrollToCard(listing);
+  };
 
   useEffect(() => {
     // Only run auth check once router is ready
@@ -43,14 +58,14 @@ const HomePage = () => {
         lat: item.latitude,
         lng: item.longitude,
         available: item.status,
-        // imageSrc:
-        //   item.imageUrl ||
-        //   (item.title === "Bike" ? "/bike.jpg" : "/scooter.jpg"),
-        // model: item.model || item.title,
-        // distance: item.distance || 0,
-        // pricePerHour: item.pricePerHour || 0,
-        // seller: item.seller || "Unknown",
-        // rating: item.rating || Math.floor(Math.random() * 5) + 1,
+        imageSrc:
+          item.imageUrl ||
+          (item.title === "Bike" ? "/bike.jpg" : "/scooter.jpg"),
+        model: item.model || item.title,
+        distance: item.distance || 0,
+        pricePerHour: item.pricePerHour || 0,
+        seller: item.seller || "Unknown",
+        rating: item.rating || Math.floor(Math.random() * 5) + 1, //@todo: make this actually pull rating
       }));
 
       const filteredListings = mappedListings.filter(
@@ -75,47 +90,55 @@ const HomePage = () => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <div className="w-1/2 p-4">
-        {loading ? (
-          <div className="h-full bg-white rounded-3xl shadow-lg flex items-center justify-center">
-            <div className="text-gray-600">Loading bikes...</div>
-          </div>
-        ) : (
-          <MapCard bikes={bikes} onBikeClick={(bike) => console.log(bike)} />
+    <div className="flex h-fit bg-gray-50 overflow-hidden">
+      <div className="w-[360px] flex flex-col p-2 pt-2">
+        {createModalIsOpen && (
+          <CreateListingModal
+            setIsOpen={setCreateModalIsOpen}
+            handler={fetchBikes}
+          />
         )}
+        <div className="flex-1 overflow-y-auto space-y-4 p-4">
+          {bikes.map((listing) => {
+            if (listing.id === selectedListing) {
+            }
+
+            return (
+              <ListingCard
+                key={listing.id}
+                imageSrc={listing.imageSrc}
+                model={listing.model}
+                distance={listing.distance ? listing.distance.toFixed(2) : null}
+                pricePerHour={listing.pricePerHour}
+                seller={listing.seller}
+                rating={listing.rating}
+                id={listing.id}
+                // onMessageSeller={handleMessageSeller}
+                // onBook={handleBook}
+                onClick={() => setSelectedListing(listing.id)}
+                selectedListing={selectedListing}
+                bike={listing.id}
+              />
+            );
+          })}
+        </div>
       </div>
 
-      <div className="w-1/2 p-4 flex flex-col gap-4">
-        <button
-          onClick={() => router.push("/listings")}
-          className="flex-1 bg-white rounded-3xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer group"
-        >
-          <div className="h-full flex flex-col relative">
-            <div className="px-6 py-6 flex items-center justify-between">
-              <h2 className="text-3xl font-bold text-gray-900">
-                Find Bike Listings
-              </h2>
+      <div className="flex-1 p-1">
+        <div className="w-full h-full bg-white rounded-3xl shadow-lg">
+          {loading ? (
+            <div className="h-full bg-white rounded-3xl shadow-lg flex items-center justify-center">
+              <div className="text-gray-600">Loading bikes...</div>
             </div>
-            <div className="flex-1 flex items-center justify-center relative">
-              <div className="relative w-full h-64 flex items-center justify-center">
-                <Image src="/HomePageImg.png" alt="Rent a bike picture" fill />
-              </div>
-            </div>
-            <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
-              <ChevronRight className="w-6 h-6 text-green-600" />
-            </div>
-          </div>
-        </button>
-
-        <button className="flex-1 bg-white rounded-3xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer group">
-          <div className="h-full flex items-center justify-between px-8">
-            <h2 className="text-5xl font-bold text-gray-900">
-              Rent Out Your Bike
-            </h2>
-            <Bike size={150} />
-          </div>
-        </button>
+          ) : (
+            <MapCard
+              bikes={bikes}
+              openCreationModal={() => setCreateModalIsOpen(true)}
+              selectBike={(s) => setSelectedListing(s)}
+              selectedBike={selectedListing}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
