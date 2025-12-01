@@ -11,6 +11,7 @@ import MapDropLocation from "@/components/listings/mapDropLocation";
 import BookingModal from "@/components/listings/bookingModal";
 import { CreateListingModal } from "@/components/listings/createListingModal";
 import { fetchListings } from "@/api/fetchListings";
+import { handleMessageSeller, handleBook } from "./util";
 
 export default function ListingsPage() {
   const [price, setPrice] = useState(25);
@@ -97,40 +98,6 @@ export default function ListingsPage() {
       setBikes(data);
     } catch (err) {
       console.error("Error searching:", err);
-    }
-  };
-
-  /*
-  function to handle messaging seller, used when Message Seller button on a card is clicked
-  Still needs to be defined with proper parameters and backend endpoint
-  */
-  const handleMessageSeller = async () => {
-    try {
-      // console.log("messaging seller"); // debug log
-      const res = await fetch("http://localhost:8080/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(),
-      });
-    } catch (err) {
-      console.error("Error messaging seller:", err);
-    }
-  };
-
-  /*
-  function to handle booking a listing, used when the book button on a card is clicked
-  Still needs to be defined with proper parameters and backend endpoint
-  */
-  const handleBook = async () => {
-    // console.log("booking listing"); // debug log
-    try {
-      const res = await fetch("http://localhost:8080/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(),
-      });
-    } catch (err) {
-      console.error("Error creating booking:", err);
     }
   };
 

@@ -6,6 +6,7 @@ import MapCard from "@/components/home/map";
 import { useRouter } from "next/navigation";
 import { CreateListingModal } from "@/components/listings/createListingModal";
 import haversineDistanceMiles from "@/components/listings/haversineDistance";
+import { handleMessageSeller, handleBook } from "../listings/util";
 
 const HomePage = () => {
   const [bikes, setBikes] = useState([]);
@@ -15,7 +16,7 @@ const HomePage = () => {
   const [createModalIsOpen, setCreateModalIsOpen] = useState(false);
   const [selectedListing, setSelectedListingSlave] = useState("");
   const [userLocation, setUserLocation] = useState(null);
-  
+
   const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
   const url = `${BASE_URL}/auth/verify`;
   const [loggedIn, setLoggedIn] = useState(null);
@@ -67,11 +68,11 @@ const HomePage = () => {
         if (!token) {
           setLoggedIn(false);
           return;
-        }  
+        }
         try {
           const res = await fetch(url, {
             method: "GET",
-            headers: { "Authorization": `Bearer ${token}` },
+            headers: { Authorization: `Bearer ${token}` },
           });
           if (!res.ok) {
             setLoggedIn(false);
@@ -84,7 +85,7 @@ const HomePage = () => {
           console.error("Auth verification error:", err);
           setLoggedIn(false);
         }
-      }
+      };
       checkAuth();
       setCheckingAuth(false);
 
@@ -93,7 +94,6 @@ const HomePage = () => {
     };
 
     init();
-
   }, [url]);
 
   const fetchBikes = async (loc) => {
@@ -106,27 +106,33 @@ const HomePage = () => {
       const data = await res.json();
 
       // Map backend 'bikes' array to frontend-friendly structure
-      const mappedListings = (data.bikes || []).map((item) => ({
-        id: item.id,
-        lat: item.latitude,
-        lng: item.longitude,
-        available: item.status,
-        imageSrc:
-          item.imageUrl ||
-          (item.title === "Bike" ? "/bike.jpg" : "/scooter.jpg"),
-        model: item.model || item.title,
-        distance: loc
-          ? haversineDistanceMiles(loc.lat, loc.lng, item.latitude, item.longitude)
-          : null,
-        pricePerHour: item.pricePerHour || 0,
-        seller: item.seller || "Unknown",
-        rating: item.rating || Math.floor(Math.random() * 5) + 1, //@todo: make this actually pull rating
-      }))
-      .sort((a, b) => {
-        if (a.distance === null) return 1;
-        if (b.distance === null) return -1;
-        return a.distance - b.distance
-      });
+      const mappedListings = (data.bikes || [])
+        .map((item) => ({
+          id: item.id,
+          lat: item.latitude,
+          lng: item.longitude,
+          available: item.status,
+          imageSrc:
+            item.imageUrl ||
+            (item.title === "Bike" ? "/bike.jpg" : "/scooter.jpg"),
+          model: item.model || item.title,
+          distance: loc
+            ? haversineDistanceMiles(
+                loc.lat,
+                loc.lng,
+                item.latitude,
+                item.longitude
+              )
+            : null,
+          pricePerHour: item.pricePerHour || 0,
+          seller: item.seller || "Unknown",
+          rating: item.rating || Math.floor(Math.random() * 5) + 1, //@todo: make this actually pull rating
+        }))
+        .sort((a, b) => {
+          if (a.distance === null) return 1;
+          if (b.distance === null) return -1;
+          return a.distance - b.distance;
+        });
 
       const filteredListings = mappedListings.filter(
         (bike) => bike.available === "available"
@@ -173,8 +179,8 @@ const HomePage = () => {
                 seller={listing.seller}
                 rating={listing.rating}
                 id={listing.id}
-                // onMessageSeller={handleMessageSeller}
-                // onBook={handleBook}
+                onMessageSeller={handleMessageSeller}
+                onBook={handleBook}
                 onClick={() => setSelectedListing(listing.id)}
                 selectedListing={selectedListing}
                 bike={listing.id}
