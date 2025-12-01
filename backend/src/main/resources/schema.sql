@@ -33,3 +33,14 @@ CREATE TABLE IF NOT EXISTS rentals (
     FOREIGN KEY (renter_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (bike_id) REFERENCES bikes(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS messages (
+    id BIGSERIAL PRIMARY KEY,
+    sender_id BIGINT NOT NULL,
+    recipient_id BIGINT NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE CASCADE
+);
