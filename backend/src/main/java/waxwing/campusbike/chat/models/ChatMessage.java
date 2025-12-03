@@ -8,6 +8,7 @@ public class ChatMessage {
     private String senderId;
     private String recipientId;
     private String content;
+    private Long listingId;
     private LocalDateTime timestamp;
     private MessageStatus status;
 
@@ -70,6 +71,14 @@ public class ChatMessage {
 
     public void setStatus(MessageStatus status) {
         this.status = status;
+    }
+
+    public Long getListingId() {
+        return listingId;
+    }
+
+    public void setListingId(Long listingId) {
+        this.listingId = listingId;
     }
 
     @Override

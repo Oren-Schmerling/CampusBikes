@@ -35,6 +35,7 @@ export default function LoginPage() {
       localStorage.setItem("authToken", result.token);
 
       setMessage("Login successful! Redirecting...");
+      window.dispatchEvent(new Event("authChange"));
       setTimeout(() => router.push("/home"), 1500); // redirect to home page
     } catch (error) {
       console.error("Login failed:", error);
