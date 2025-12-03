@@ -11,7 +11,7 @@ specifically things like creating markers, zooming, panning, etc
 Leaflet does not provide a map tile, which is what openstreetmap is for
 */
 
-const MapCard = ({ bikes, onBikeClick }) => {
+const MapCard = ({ bikes, openCreationModal, selectBike, selectedBike }) => {
   const mapRef = useRef(null); // reference to the div for the map's rendering
   const mapInstanceRef = useRef(null); // reference to the map's instance/the leaflet map object
   const markersRef = useRef([]); // reference to the markers displayed on the map (should be the bikes eventually)
@@ -53,11 +53,14 @@ const MapCard = ({ bikes, onBikeClick }) => {
         function onLocationFound(e) {
           const userLatLng = e.latlng;
 
-            localStorage.setItem("userLocation", JSON.stringify({
+          localStorage.setItem(
+            "userLocation",
+            JSON.stringify({
               lat: userLatLng.lat,
               lng: userLatLng.lng,
               timestamp: Date.now(),
-            }));
+            })
+          );
 
           // Create a small green dot marker
           const userIcon = window.L.divIcon({
@@ -98,15 +101,6 @@ const MapCard = ({ bikes, onBikeClick }) => {
 
     // append the map to the DOM
     document.body.appendChild(script);
-
-    // cleanup function, should be ran when the user leaves the page
-    return () => {
-      // destroy map component on the DOM when user moves away from the page
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
-    };
   }, []);
 
   // Update markers when bikes data changes
@@ -118,45 +112,44 @@ const MapCard = ({ bikes, onBikeClick }) => {
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
 
-    // Create custom icon (may want ot change this later)
-    const bikeIcon = window.L.divIcon({
-      className: "custom-bike-marker",
-      html: `<div style="background-color: #dc2626; width: 32px; height: 32px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-    });
-
     // Add new markers
+    console.log(bikes);
     bikes.forEach((bike) => {
+      // Create custom icon (may want ot change this later)
+      var bikeIcon;
+      if (bike.id === selectedBike) {
+        bikeIcon = window.L.divIcon({
+          className: "custom-bike-marker hover:cursor-pointer",
+          html: `<div data-bike-id=${bike.id} style="background-color: #2c4a1f; width:40px; height: 40px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 3px solid white; box-shadow: 0 3px 12px rgba(0,0,0,0.3);"></div>`,
+          iconSize: [40, 40],
+          iconAnchor: [20, 40],
+        });
+      } else {
+        bikeIcon = window.L.divIcon({
+          className: "custom-bike-marker hover:cursor-pointer",
+          html: `<div data-bike-id=${bike.id} style="background-color: #6aa84f; width:32px; height: 32px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
+          iconSize: [32, 32],
+          iconAnchor: [16, 32],
+        });
+      }
+
       // haven't done too much research, but leaflet needs lat long pair, might cause issues if we are storing addresses
       const marker = window.L.marker([bike.lat, bike.lng], {
         icon: bikeIcon,
       }).addTo(mapInstanceRef.current);
-
-      // might want to add functionality here to book a bike here?
-      // create a div container for the marker popup
-      const popupContainer = document.createElement("div");
-
-      // Create a React root and render the marker component
-      const root = createRoot(popupContainer);
-      root.render(<MapPopup bike={bike} />);
-
-      marker.bindPopup(popupContainer);
-
-      //   add functionality when a bike is clicked?
-      //   if (onBikeClick) {
-      //     marker.on('click', () => onBikeClick(bike));
-      //   }
-
-      // update current markers
       markersRef.current.push(marker);
+
+      // Add click handler
+      marker.on("click", () => {
+        selectBike(bike.id);
+      });
     });
-  }, [bikes, isMapLoaded, onBikeClick]);
+  }, [bikes, isMapLoaded, selectBike, selectedBike]);
 
   return (
-    <div className="h-full bg-white rounded-3xl shadow-lg overflow-hidden flex flex-col">
+    <div className="h-full bg-white shadow-lg overflow-hidden flex flex-col">
       {/* Map Header */}
-      <div className="bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+      {/*<div className="bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold text-gray-900">
             Search Bikes on the Map
@@ -165,11 +158,17 @@ const MapCard = ({ bikes, onBikeClick }) => {
         <div className="w-16 h-16 bg-green-400 rounded-full flex items-center justify-center">
           <MapPinned className="w-8 h-8 text-red-500" />
         </div>
-      </div>
+      </div>*/}
 
       {/* Map Container */}
       <div className="flex-1 relative">
-        <div ref={mapRef} className="w-full h-full" />
+        <button
+          onClick={openCreationModal}
+          className="fixed absolute px-6 py-2 top-24 right-12 z-40 text-xl bg-waxwingGreen text-white rounded-xl hover:bg-waxwingLightGreen active:bg-waxwingDarkGreen transition-colors disabled:opacity-70"
+        >
+          Create Listing
+        </button>{" "}
+        <div ref={mapRef} className="fixed w-full h-full pb-12" />
         {/* Have loading map display if map is still rendering */}
         {!isMapLoaded && (
           <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center">

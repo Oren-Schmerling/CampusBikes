@@ -49,7 +49,7 @@ export async function signup(endpointOrData, maybeData) {
     }
 
     console.debug("signup() success", parsed);
-    alert("Signup successful!");
+    //alert("Signup successful!");
     return { success: true, data: parsed };
   } catch (err) {
     console.error("signup() network error:", err);

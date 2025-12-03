@@ -26,7 +26,7 @@ services:
       - "8080:8080"
 
   postgres:
-    image: postgres:latest
+    image: postgres:17 # using Postgres version 17, had some errors with postgres:latest
     container_name: postgres_db
     env_file: ".env"
     ports:
