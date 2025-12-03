@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 const mapPopup = ({ bike, onMount }) => {
   const containerRef = useRef(null);
@@ -13,7 +13,7 @@ const mapPopup = ({ bike, onMount }) => {
 
   const handleBookClick = async (e) => {
     e.preventDefault();
-    
+
     //   // Example fetch to backend endpoint (uncomment & adapt URL when ready)
     //   /*
     //   try {
@@ -28,40 +28,40 @@ const mapPopup = ({ bike, onMount }) => {
     //     console.error('booking failed', err);
     //   }
     //   */
- 
-    console.log('Book button clicked for bike', bike.id);
+
+    console.log("Book button clicked for bike", bike.id);
   };
 
   return (
-    <div ref={containerRef} style={{ textAlign: 'center', padding: '8px' }}>
+    <div ref={containerRef} style={{ textAlign: "center", padding: "8px" }}>
       <div>
         <strong>Bike #{bike.id}</strong>
       </div>
       <div
         style={{
-          margin: '6px 0',
-          color: bike.available ? '#16a34a' : '#dc2626'
+          margin: "6px 0",
+          color: bike.available ? "#16a34a" : "#dc2626",
         }}
       >
-        {bike.available ? 'Available' : 'In Use'}
+        {bike.available ? "Available" : "In Use"}
       </div>
       <button
         onClick={handleBookClick}
         disabled={!bike.available}
         style={{
-          background: 'green',
-          color: 'white',
-          border: 'none',
-          padding: '6px 12px',
-          borderRadius: '6px',
-          cursor: bike.available ? 'pointer' : 'not-allowed',
-          opacity: bike.available ? '1' : '0.6'
+          background: "green",
+          color: "white",
+          border: "none",
+          padding: "6px 12px",
+          borderRadius: "6px",
+          cursor: bike.available ? "pointer" : "not-allowed",
+          opacity: bike.available ? "1" : "0.6",
         }}
       >
         book
       </button>
     </div>
   );
-}
+};
 
 export default mapPopup;

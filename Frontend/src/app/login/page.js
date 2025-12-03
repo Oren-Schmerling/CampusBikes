@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import NavBar from "@/components/nav/navBar";
 import Link from "next/link";
 import { login } from "@/api/login"; // <-- we'll create this file next
 
@@ -49,8 +48,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-lighterGray flex flex-col">
-      {/*<NavBar />*/}
-
       <div className="flex flex-1 justify-center items-center">
         <div className="bg-gray-100 rounded-2xl p-10 w-full max-w-md shadow-lg">
           <h1 className="text-4xl font-bold text-nearBlack mb-8 text-center">
@@ -92,7 +89,7 @@ export default function LoginPage() {
           )}
 
           <p className="text-center text-gray-600 mt-6">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/signup" className="text-waxwingGreen font-medium">
               Sign up
             </Link>

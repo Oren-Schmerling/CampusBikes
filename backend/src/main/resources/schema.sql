@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS bikes (
     description TEXT,
     location VARCHAR(100),
     price_per_hour DECIMAL(10, 2),
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
     status VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
@@ -30,4 +32,15 @@ CREATE TABLE IF NOT EXISTS rentals (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (renter_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (bike_id) REFERENCES bikes(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS messages (
+    id BIGSERIAL PRIMARY KEY,
+    sender_id BIGINT NOT NULL,
+    recipient_id BIGINT NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE CASCADE
 );

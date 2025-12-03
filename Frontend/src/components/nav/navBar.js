@@ -4,8 +4,8 @@ import { Home, FileText, List, MessageSquare, User } from 'lucide-react';
 import Link from "next/link";
 
 // function for the account icon
-const AccountItem = (text, url="/") =>{
-  return(
+const AccountItem = (text, url = "/") => {
+  return (
     <div
       data-badge="None"
       data-selected="True"
@@ -21,7 +21,7 @@ const AccountItem = (text, url="/") =>{
         ">
           <div className="w-14 h-8 relative inline-flex justify-center items-center">
             <div className="w-6 h-6 relative overflow-hidden">
-            <User color="white" />
+              <User color="white" />
             </div>
           </div>
         </div>
@@ -34,17 +34,17 @@ const AccountItem = (text, url="/") =>{
 }
 
 // function used for the logo
-const LogoItem = () =>{
-  return(
-        <Link href="/" className="flex bg-waxwingGreen px-4 py-1.5 rounded-2xl items-center space-x-2 text-white hover:opacity-90 transition-opacity border-1 border-black">
-          <div className="text-2xl font-bold">CampusBikes</div>
-          <img src="/CampusBikesLogo.svg" alt="CampusBikes" className="h-12" />      
-        </Link>
+const LogoItem = () => {
+  return (
+    <Link href="/" className="flex bg-waxwingGreen px-4 py-1.5 rounded-2xl items-center space-x-2 text-white hover:opacity-90 transition-opacity border-1 border-black">
+      <div className="text-2xl font-bold">CampusBikes</div>
+      <img src="/CampusBikesLogo.svg" alt="CampusBikes" className="h-12" />
+    </Link>
   );
 }
 
 const NavItem = (icon, text, url = "/") => {
-  return(
+  return (
     <div
       data-badge="None"
       data-selected="True"
@@ -74,7 +74,7 @@ const navbar_with_color = (color) => {
   function that has background color of the navbar as a parameter
   */
   let navColor = "bg-" + color + " py-2";
-  return(
+  return (
     <nav className={navColor}>
       <div className="px-2 mx-auto flex items-center justify-between">
         {LogoItem()}
@@ -85,12 +85,12 @@ const navbar_with_color = (color) => {
             <Home className="w-5 h-5" />
             <span className="font-medium">Home</span>
           </Link>
-          
+
           <Link href="/posting" className="flex bg-waxwingGreen items-center space-x-2 text-white hover:bg-green-900 px-4 py-2 rounded-2xl transition-colors border-1 border-black">
             <FileText className="w-5 h-5" />
             <span className="font-medium">Posting</span>
           </Link>
-          
+
           <Link href="/listings" className="flex bg-waxwingGreen items-center space-x-2 text-white hover:bg-green-900 px-4 py-2 rounded-2xl transition-colors border-1 border-black">
             <List className="w-5 h-5" />
             <span className="font-medium">Listing</span>
@@ -114,7 +114,7 @@ const NavBar = () => {
     try {
       // Only run auth check once router is ready
       const token = typeof window !== "undefined" ? window.localStorage.getItem("authToken") : null;
-      if (!token){
+      if (!token) {
         setIsLoggedIn(false);
       } else {
         setIsLoggedIn(true);
@@ -149,7 +149,7 @@ const NavBar = () => {
         {NavItem("chat.svg", "Contact us", "/contact")}
       </div>
     );
-  } 
+  }
 
   return (
     // lightGray
