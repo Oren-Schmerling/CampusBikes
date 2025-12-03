@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ProfileCard from '@/components/profile/profileCard';
+import PropertyBox from '@/components/profile/propertyBox';
 
 const AccountPage = () => {
 
@@ -39,7 +40,7 @@ const AccountPage = () => {
 
         setCheckingAuth(false);
     }, [router]);
-    
+
     const handleEdit = () => {
         console.log('Edit clicked');
         // backend endpoint to change user information
@@ -60,7 +61,7 @@ const AccountPage = () => {
     }
 
     // Wait for user information to load
-    if (loading){
+    if (loading) {
         return (
             <div className="flex items-center justify-center h-screen">
                 <div className="text-gray-600">Loading ...</div>
@@ -71,15 +72,20 @@ const AccountPage = () => {
     return (
         <div className="min-h-screen bg-white p-8">
             <ProfileCard
-            username="User_xx" // {userInfo.username}
-            phoneNumber="999-999-999" // {userInfo.phone}
-            email="umass@umass.edu" // {userInfo.email}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
+                username="User_xx" // {userInfo.username}
+                phoneNumber="999-999-999" // {userInfo.phone}
+                email="umass@umass.edu" // {userInfo.email}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
             />
-            
-            <div className="mt-8">
-            {/* Future sections */}
+
+            <div className="grid grid-cols-2 gap-16 mt-8">
+                <PropertyBox
+                    name="Listings"
+                />
+                <PropertyBox
+                    name="Rentals"
+                />
             </div>
         </div>
     );
