@@ -60,4 +60,21 @@ public class ListingsController {
 
     return ResponseEntity.ok(response);
   }
+
+  @PostMapping("/getbikesuser")
+  public ResponseEntity<Map<String, Object>> returnUserBikes(
+        @RequestHeader("Authorization") String authHeader) {
+    Map<String, Object> response = new HashMap<>();
+
+    String token = authHeader.substring(7).trim();
+    String username = JwtUtil.getUsernameFromToken(token);
+
+    List<Bike> bikes = listingService.returnUserBikes(username);
+
+    response.put("message", "Fetched all bikes for this user successfully.");
+    response.put("bikes", bikes);
+    response.put("count", bikes.size());
+
+    return ResponseEntity.ok(response);
+  }
 }

@@ -141,4 +141,41 @@ public class ListingService {
         return new ArrayList<>(); 
     }
   }
+
+  public List<Bike> returnUserBikes(String username) {
+    String checkSql = "SELECT * FROM bikes where owner_id = ?";
+    List<Bike> bikes = new ArrayList<>();
+
+    User user = getUser(username);
+
+    try (Connection conn = dataSource.getConnection();
+        PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+
+        checkStmt.setLong(1, user.getId());
+        ResultSet rs = checkStmt.executeQuery();
+
+        while (rs.next()) {
+            Bike bike = new Bike(
+                rs.getLong("owner_id"),
+                rs.getString("title"),
+                rs.getString("description"),
+                rs.getString("location"),
+                rs.getBigDecimal("price_per_hour"),
+                rs.getDouble("latitude"),
+                rs.getDouble("longitude"),
+                rs.getString("status")
+            );
+            bike.setId(rs.getLong("id"));
+            bike.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+            
+            bikes.add(bike);
+        }
+
+        return bikes;
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return new ArrayList<>(); 
+    }
+  }
 }

@@ -6,6 +6,7 @@ import ProfileCard from '@/components/profile/profileCard';
 import PropertyBox from '@/components/profile/propertyBox';
 import RentalItem from '@/components/profile/rentalItem';
 import ListingItem from '@/components/profile/listingItem';
+import { logout } from "@/api/logout";
 
 const AccountPage = () => {
 
@@ -95,6 +96,45 @@ const AccountPage = () => {
         }
     }
 
+    const fetchUserListings = async (token) => {
+        try {
+            setLoading(true);
+
+            const res = await fetch("http://localhost:8080/listing/getbikesuser", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+            const data = await res.json();
+            setListingItems(data.bikes)
+        } catch (error) {
+            console.error('Error fetching bikes:', error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const fetchUserRentals = async (token) => {
+        try {
+            setLoading(true);
+
+            const res = await fetch("http://localhost:8080/booking/user", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+            const data = await res.json();
+            console.log(data)
+            setRentalItems(data.bookings)
+        } catch (error) {
+            console.error('Error fetching bikes:', error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
     useEffect(() => {
         // Only run auth check once router is ready
         const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
@@ -104,6 +144,8 @@ const AccountPage = () => {
         } else {
             console.log('Token found');
             fetchUserInfo(token);
+            fetchUserListings(token);
+            fetchUserRentals(token)
         }
 
         setCheckingAuth(false);
@@ -114,9 +156,9 @@ const AccountPage = () => {
         // backend endpoint to change user information
     };
 
-    const handleDelete = () => {
-        console.log('Delete clicked');
-        // backend endpoint to delete user
+    const handleLogout = () => {
+        logout();
+        router.replace('/');
     };
 
     // While checking for token, don't render anything
@@ -144,11 +186,11 @@ const AccountPage = () => {
                 phoneNumber={userInfo.phone}
                 email={userInfo.email}
                 onEdit={handleEdit}
-                onDelete={handleDelete}
+                onLogout={handleLogout}
             />
             <div className="grid grid-cols-2 gap-16 mt-8">
                 <PropertyBox name="My Listings">
-                    {mockListingItems.map(item => (
+                    {listingItems.map(item => (
                         <ListingItem key={item.id} item={item} />
                     ))}
                 </PropertyBox>

@@ -2,7 +2,13 @@ package waxwing.campusbike.booking.service;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.sql.DataSource;
 
@@ -10,20 +16,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import waxwing.campusbike.Env;
-import waxwing.campusbike.types.Bike;
 import waxwing.campusbike.types.Rental;
+import waxwing.campusbike.types.User;
 import waxwing.campusbike.types.dto.BookingAvailability;
 import waxwing.campusbike.types.dto.BookingRequest;
-import waxwing.campusbike.types.User;
-import java.sql.ResultSet;
-
-// to convert string to localdatetime
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 public class BookingService {
@@ -291,6 +289,38 @@ public class BookingService {
         try (Connection conn = dataSource.getConnection();
             PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
 
+            ResultSet rs = checkStmt.executeQuery();
+
+            while (rs.next()) {
+                Rental booking = new Rental(
+                    rs.getLong("renter_id"),
+                    rs.getLong("bike_id"),
+                    rs.getTimestamp("start_time").toLocalDateTime(),
+                    rs.getTimestamp("end_time").toLocalDateTime()
+                );
+                booking.setId(rs.getLong("id"));
+                
+                bookings.add(booking);
+            }
+
+            return bookings;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new ArrayList<>(); 
+        }
+    }
+
+    public List<Rental> returnUserBookings(String username) {
+        String checkSql = "SELECT * FROM rentals where renter_id = ?";
+        List<Rental> bookings = new ArrayList<>();
+
+        User user = getUser(username);
+
+        try (Connection conn = dataSource.getConnection();
+            PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+
+            checkStmt.setLong(1, user.getId());
             ResultSet rs = checkStmt.executeQuery();
 
             while (rs.next()) {
