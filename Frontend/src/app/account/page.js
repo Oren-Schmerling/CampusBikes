@@ -7,6 +7,7 @@ import PropertyBox from '@/components/profile/propertyBox';
 import RentalItem from '@/components/profile/rentalItem';
 import ListingItem from '@/components/profile/listingItem';
 import { logout } from "@/api/logout";
+import changeAccount from '@/api/accountChange';
 
 const AccountPage = () => {
 
@@ -151,9 +152,29 @@ const AccountPage = () => {
         setCheckingAuth(false);
     }, [router]);
 
-    const handleEdit = () => {
-        console.log('Edit clicked');
-        // backend endpoint to change user information
+    const handleEdit = async (updateData) => {
+        const result = await changeAccount(updateData);
+
+        // console.log("result: ", result) // debugging
+
+        if (result.success) {
+            // Check if username was changed, for now, log the user out and have them sign in again if the username was changed
+            // otherwise there were errors which would crash the page
+            if (updateData.username !== userInfo.username) {
+                alert('Username changed successfully! Please log in again with your new username.');
+                logout();
+                router.replace('/');
+            } else {
+                // Only refresh if username wasn't changed
+                const token = localStorage.getItem('authToken');
+                await fetchUserInfo(token);
+                console.log('Profile updated successfully');
+                alert('Profile updated successfully!');
+            }
+        } else {
+            console.log('Profile not updated successfully');
+            alert('Failed to update profile. Please try again.');
+        }
     };
 
     const handleLogout = () => {
