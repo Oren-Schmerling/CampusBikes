@@ -6,6 +6,7 @@ import ProfileCard from '@/components/profile/profileCard';
 import PropertyBox from '@/components/profile/propertyBox';
 import RentalItem from '@/components/profile/rentalItem';
 import ListingItem from '@/components/profile/listingItem';
+import { EditListingModal } from "@/components/profile/editListingModal";
 import { logout } from "@/api/logout";
 import changeAccount from '@/api/accountChange';
 
@@ -19,64 +20,9 @@ const AccountPage = () => {
     const [listingItems, setListingItems] = useState([]);
     const [rentalItems, setRentalItems] = useState([]);
 
-    const mockListingItems = [
-        {
-            id: 1,
-            description: "Brand new electric scooter, perfect for campus commuting",
-            distance: 0.5,
-            imageSrc: "/scooter.jpg",
-            latitude: 42.387,
-            location: "Baker Hall",
-            longitude: -72.5289,
-            model: "Segway Ninebot",
-            pricePerHour: 10,
-            rating: 5,
-            seller: "john_doe",
-            title: "Electric Scooter"
-        },
-        {
-            id: 2,
-            description: "Well-maintained mountain bike, great for trails",
-            distance: 1.2,
-            imageSrc: "/bike.jpg",
-            latitude: 42.390,
-            location: "Southwest Dorms",
-            longitude: -72.5310,
-            model: "Trek Marlin 7",
-            pricePerHour: 8,
-            rating: 4,
-            seller: "bike_lover",
-            title: "Mountain Bike"
-        },
-        {
-            id: 3,
-            description: "Comfortable cruiser bike for leisurely rides around campus",
-            distance: 0.8,
-            imageSrc: "/bike.jpg",
-            latitude: 42.385,
-            location: "Library",
-            longitude: -72.5295,
-            model: "Schwinn Cruiser",
-            pricePerHour: 6,
-            rating: 5,
-            seller: "jane_smith",
-            title: "Beach Cruiser"
-        },
-        {
-            id: 4,
-            description: "Fast road bike for experienced riders",
-            distance: 2.1,
-            imageSrc: "/bike.jpg",
-            latitude: 42.392,
-            location: "Engineering Building",
-            longitude: -72.5320,
-            model: "Giant TCR",
-            pricePerHour: 12,
-            rating: 4,
-            seller: "speed_demon",
-            title: "Road Bike"
-        }
-    ];
+    const [editModalIsOpen, setEditModalIsOpen] = useState(false);
+    const [selectedListing, setSelectedListing] = useState(null);
+
 
     const fetchUserInfo = async (token) => {
         try {
@@ -97,7 +43,10 @@ const AccountPage = () => {
         }
     }
 
-    const fetchUserListings = async (token) => {
+    const fetchUserListings = async () => {
+
+        const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+
         try {
             setLoading(true);
 
@@ -212,7 +161,14 @@ const AccountPage = () => {
             <div className="grid grid-cols-2 gap-16 mt-8">
                 <PropertyBox name="My Listings">
                     {listingItems.map(item => (
-                        <ListingItem key={item.id} item={item} />
+                        <ListingItem
+                            key={item.id}
+                            item={item}
+                            onEdit={(listing) => {
+                                setSelectedListing(listing);
+                                setEditModalIsOpen(true);
+                            }}
+                        />
                     ))}
                 </PropertyBox>
 
@@ -222,6 +178,13 @@ const AccountPage = () => {
                     ))}
                 </PropertyBox>
             </div>
+            {editModalIsOpen && (
+                <EditListingModal
+                    setIsOpen={setEditModalIsOpen}
+                    handler={() => fetchUserListings()}
+                    formData={selectedListing}
+                />
+            )}
         </div>
     );
 }

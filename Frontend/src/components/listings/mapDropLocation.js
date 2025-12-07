@@ -3,12 +3,24 @@
 import React, { useState, useEffect, useRef } from "react";
 import { MapPinned } from "lucide-react";
 
-const MapDropLocation = ({ onPositionChange }) => {
+const MapDropLocation = ({ onPositionChange, startPos }) => {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markerRef = useRef(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
-  const [selectedPosition, setSelectedPosition] = useState([42.387, -72.5289]);
+  const [selectedPosition, setSelectedPosition] = useState(
+    startPos ?? [42.387, -72.5289]
+  );
+
+  useEffect(() => {
+    if (!startPos) return;
+    setSelectedPosition(startPos);
+
+    if (markerRef.current && mapInstanceRef.current) {
+      markerRef.current.setLatLng(startPos);
+      mapInstanceRef.current.setView(startPos);
+    }
+  }, [startPos]);
 
   useEffect(() => {
     const loadLeaflet = async () => {

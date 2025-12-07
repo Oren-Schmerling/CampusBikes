@@ -17,6 +17,7 @@ import waxwing.campusbike.auth.util.JwtUtil;
 import waxwing.campusbike.listing.service.ListingService;
 import waxwing.campusbike.types.Bike;
 import waxwing.campusbike.types.dto.BikeCreateRequest;
+import waxwing.campusbike.types.dto.BikeUpdateRequest;
 
 @RestController
 @RequestMapping("/listing")
@@ -44,6 +45,25 @@ public class ListingsController {
     System.out.println(statusCode);
 
     response.put("message", "Bike creation successful.");
+    response.put("statusCode", statusCode);
+    return ResponseEntity.ok(response);
+  }
+
+  @PostMapping("/update")
+  public ResponseEntity<Map<String, Object>> updateBike(
+      @RequestBody BikeUpdateRequest request,
+      @RequestHeader("Authorization") String authHeader) {
+
+    Map<String, Object> response = new HashMap<>();
+
+    String token = authHeader.substring(7).trim();
+    String username = JwtUtil.getUsernameFromToken(token);
+
+    int statusCode = listingService.updateBike(username, request.getOwnerId(), request);
+
+    System.out.println(statusCode);
+
+    response.put("message", "Bike update successful.");
     response.put("statusCode", statusCode);
     return ResponseEntity.ok(response);
   }
