@@ -59,7 +59,7 @@ public class ListingsController {
     String token = authHeader.substring(7).trim();
     String username = JwtUtil.getUsernameFromToken(token);
 
-    int statusCode = listingService.updateBike(username, request.getOwnerId(), request);
+    int statusCode = listingService.updateBike(username, request.getid(), request);
 
     System.out.println(statusCode);
 

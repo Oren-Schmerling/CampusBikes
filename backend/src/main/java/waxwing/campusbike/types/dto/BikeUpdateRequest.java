@@ -78,7 +78,7 @@ public class BikeUpdateRequest {
     this.longitude = longitude;
   }
 
-  public double getid() {
+  public long getid() {
     return id;
   }
 

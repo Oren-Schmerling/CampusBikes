@@ -7,6 +7,7 @@ import PropertyBox from '@/components/profile/propertyBox';
 import RentalItem from '@/components/profile/rentalItem';
 import ListingItem from '@/components/profile/listingItem';
 import { EditListingModal } from "@/components/profile/editListingModal";
+import { handleMessageSeller } from '../listings/util';
 import { logout } from "@/api/logout";
 import changeAccount from '@/api/accountChange';
 
@@ -174,7 +175,10 @@ const AccountPage = () => {
 
                 <PropertyBox name="My Rentals">
                     {rentalItems.map(item => (
-                        <RentalItem key={item.id} item={item} />
+                        <RentalItem
+                            key={item.id}
+                            item={item}
+                            onMessageSeller={handleMessageSeller} />
                     ))}
                 </PropertyBox>
             </div>
