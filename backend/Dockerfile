@@ -1,5 +1,5 @@
 # Use an official OpenJDK runtime as a parent image
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jdk
 
 # Set the working directory in the container
 WORKDIR /backend

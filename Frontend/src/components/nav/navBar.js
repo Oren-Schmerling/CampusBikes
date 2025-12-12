@@ -55,12 +55,44 @@ const AltNavItem = (icon, text, url = "/") => {
 }
 
 const NavBar = () => {
-  const [loggedIn, setLoggedIn] = useState(false);
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+  const url = `${BASE_URL}/auth/verify`;
+  const [loggedIn, setLoggedIn] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    if (token) setLoggedIn(true);
-  }, []);
+    const checkAuth = async () => {
+      console.log("Checking auth status in NavBar...");
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        setLoggedIn(false);
+        return;
+      }
+
+      console.log("token found in NavBar:", token);
+
+      try {
+        const res = await fetch(url, {
+          method: "GET",
+          headers: { "Authorization": `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+          setLoggedIn(false);
+          return;
+        }
+
+        const data = await res.json();
+        setLoggedIn(data.valid); // true or false
+      } catch (err) {
+        console.error("Auth verification error:", err);
+        setLoggedIn(false);
+      }
+    }
+    checkAuth();
+
+    window.addEventListener("authChange", checkAuth);
+    return () => window.removeEventListener("authChange", checkAuth);
+  }, [url]);
 
   if (!loggedIn) {
     return (
@@ -87,7 +119,8 @@ const NavBar = () => {
       <div className="flex w-full justify-between ml-20">
         {AltNavItem("homeIcon.svg", "Home Page", "/home")}
         {AltNavItem("plusCircle.svg", "Listings", "/listings")}
-        {AltNavItem("accountCircle.svg", "Account", "/contact")}
+        {AltNavItem("chat.svg", "Messages", "/chat")}
+        {AltNavItem("accountCircle.svg", "Account", "/account")}
       </div>
     </div>
   );
