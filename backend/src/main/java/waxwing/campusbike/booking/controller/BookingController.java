@@ -1,5 +1,9 @@
 package waxwing.campusbike.booking.controller;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,8 +21,12 @@ import waxwing.campusbike.auth.util.JwtUtil;
 // import waxwing.campusbike.types.Bike;
 import waxwing.campusbike.types.Rental;
 import waxwing.campusbike.types.dto.BookingRequest;
+
+import waxwing.campusbike.auth.util.JwtUtil;
 import waxwing.campusbike.booking.service.BookingService;
+import waxwing.campusbike.types.Rental;
 import waxwing.campusbike.types.dto.BookingAvailability;
+import waxwing.campusbike.types.dto.BookingRequest;
 
 @RestController
 @RequestMapping("/booking")
@@ -92,5 +100,23 @@ public class BookingController {
 
     return ResponseEntity.ok(response);
   }
+
+    @PostMapping("/user")
+    public ResponseEntity<Map<String, Object>> returnUserBookings(
+        @RequestHeader("Authorization") String authHeader
+    ) {
+        Map<String, Object> response = new HashMap<>();
+
+        String token = authHeader.substring(7).trim();
+        String username = JwtUtil.getUsernameFromToken(token);
+
+        List<Rental> bookings = bookingService.returnUserBookings(username);
+
+        response.put("message", "Fetched all bookings successfully.");
+        response.put("bookings", bookings);
+        response.put("count", bookings.size());
+
+        return ResponseEntity.ok(response);
+    }
 
 }

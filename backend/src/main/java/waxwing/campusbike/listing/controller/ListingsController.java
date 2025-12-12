@@ -17,6 +17,7 @@ import waxwing.campusbike.auth.util.JwtUtil;
 import waxwing.campusbike.listing.service.ListingService;
 import waxwing.campusbike.types.Bike;
 import waxwing.campusbike.types.dto.BikeCreateRequest;
+import waxwing.campusbike.types.dto.BikeUpdateRequest;
 
 @RestController
 @RequestMapping("/listing")
@@ -48,6 +49,25 @@ public class ListingsController {
     return ResponseEntity.ok(response);
   }
 
+  @PostMapping("/update")
+  public ResponseEntity<Map<String, Object>> updateBike(
+      @RequestBody BikeUpdateRequest request,
+      @RequestHeader("Authorization") String authHeader) {
+
+    Map<String, Object> response = new HashMap<>();
+
+    String token = authHeader.substring(7).trim();
+    String username = JwtUtil.getUsernameFromToken(token);
+
+    int statusCode = listingService.updateBike(username, request.getid(), request);
+
+    System.out.println(statusCode);
+
+    response.put("message", "Bike update successful.");
+    response.put("statusCode", statusCode);
+    return ResponseEntity.ok(response);
+  }
+
   @GetMapping("/bikes")
   public ResponseEntity<Map<String, Object>> returnAllBikes() {
     Map<String, Object> response = new HashMap<>();
@@ -55,6 +75,23 @@ public class ListingsController {
     List<Bike> bikes = listingService.returnAllBikes();
 
     response.put("message", "Fetched all bikes successfully.");
+    response.put("bikes", bikes);
+    response.put("count", bikes.size());
+
+    return ResponseEntity.ok(response);
+  }
+
+  @PostMapping("/getbikesuser")
+  public ResponseEntity<Map<String, Object>> returnUserBikes(
+        @RequestHeader("Authorization") String authHeader) {
+    Map<String, Object> response = new HashMap<>();
+
+    String token = authHeader.substring(7).trim();
+    String username = JwtUtil.getUsernameFromToken(token);
+
+    List<Bike> bikes = listingService.returnUserBikes(username);
+
+    response.put("message", "Fetched all bikes for this user successfully.");
     response.put("bikes", bikes);
     response.put("count", bikes.size());
 

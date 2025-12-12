@@ -120,7 +120,7 @@ const NavBar = () => {
         {AltNavItem("homeIcon.svg", "Home Page", "/home")}
         {AltNavItem("plusCircle.svg", "Listings", "/listings")}
         {AltNavItem("chat.svg", "Messages", "/chat")}
-        {AltNavItem("accountCircle.svg", "Account", "/contact")}
+        {AltNavItem("accountCircle.svg", "Account", "/account")}
       </div>
     </div>
   );

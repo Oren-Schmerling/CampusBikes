@@ -52,7 +52,17 @@ const MessageSellerForm = ({ id, seller, title, onSend, onBack }) => {
         <div className="space-y-6">
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
             <p className="text-sm text-green-800">
-              Contact {seller} to discuss pricing or ask questions about renting {title}.
+              {seller && title &&
+                <>Contact {seller} to discuss pricing or ask questions about renting {title}.</>}
+
+              {seller && !title &&
+                <>Contact {seller} to discuss pricing or ask questions.</>}
+
+              {!seller && title &&
+                <>Contact the seller to discuss pricing or ask questions about renting {title}.</>}
+
+              {!seller && !title &&
+                <>Contact the seller to discuss pricing or ask questions.</>}
             </p>
           </div>
 
@@ -64,7 +74,7 @@ const MessageSellerForm = ({ id, seller, title, onSend, onBack }) => {
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder={`Hi ${seller}, I'm interested in renting your listing for, ${title}, ...`}
+                placeholder={`Hi ${seller || 'there'}, I'm interested in renting your listing${title ? ` for ${title}` : ''}, ...`}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
                 rows={6}
               />
