@@ -40,3 +40,7 @@ After starting up the containers on docker, you should be able to see the Campus
 You can look at the PostgreSQL database by logging into it via the virtual network created by Docker. It's on port 5432 and you can connect to it with the following command: `psql -h localhost -p 5432 -U postgres_user -d bikedb`. You'll be prompted to enter the password which is set in your .env file.
 
 When you're done running the server, be sure to stop the process and then run `docker-compose down -v` to stop the running containers and tear down all newly created volumes.
+
+# Running tests
+
+The easiest way to run our unit tests is with the Junit functionality directly in VSCode. Navigating to the testing tab after spinning up all containers will allow you to run the tests from the GUI.
