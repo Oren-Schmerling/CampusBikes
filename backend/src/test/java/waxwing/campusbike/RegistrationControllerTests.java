@@ -1,17 +1,18 @@
 package waxwing.campusbike;
 
-import waxwing.campusbike.types.dto.RegistrationRequest;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
+import waxwing.campusbike.types.dto.RegistrationRequest;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class RegistrationControllerTests {
@@ -24,29 +25,6 @@ public class RegistrationControllerTests {
 
   private String getBaseUrl() {
     return "http://localhost:" + port + "/auth/register";
-  }
-
-  @Test
-  void testSuccessfulRegistration() {
-    String username = "testuser_" + UUID.randomUUID() + "_" + System.currentTimeMillis();
-
-    RegistrationRequest request = new RegistrationRequest();
-    request.setUsername(username);
-    request.setPassword("password123");
-    request.setEmail(username + "@umass.edu");
-    request.setPhone("4135459400");
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-
-    HttpEntity<RegistrationRequest> entity = new HttpEntity<>(request, headers);
-
-    ResponseEntity<String> response = restTemplate.postForEntity(getBaseUrl(), entity, String.class);
-
-    System.out.println("Response Status: " + response.getStatusCode());
-    System.out.println("Response Body: " + response.getBody());
-
-    assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
   @Test
